@@ -1,0 +1,50 @@
+name: Ubuntu-latest
+
+on: [push, pull_request]
+
+jobs:
+
+  test:
+  
+    strategy:
+      matrix:
+        go-version: ['stable']
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run:  go get -t github.com/mcu-art/ergomcutool
+
+    - name: Test with coverage
+      run:
+          go test -race -coverprofile=coverage.out -covermode=atomic  ./...
+
+    - name: Process golang coverage data
+      run: |
+          set -x
+          COVERAGE=`go tool cover -func=coverage.out | grep total | grep -Eo '[0-9]+\.[0-9]+'`
+          if (( $(echo "$COVERAGE <= 50" | bc -l) )) ; then
+            COLOR=red
+          elif (( $(echo "$COVERAGE > 80" | bc -l) )); then
+            COLOR=green
+          else
+            COLOR=orange
+          fi
+          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
+          echo "COLOR=$COLOR" >> $GITHUB_ENV
+    - name: Create gist and coverage badge
+      uses: schneegans/dynamic-badges-action@v1.6.0
+      with:
+        auth: ${{ secrets.SECRET_FOR_GIST_CODECOV_BADGE }}
+        gistID: e32e37141973c5d7c3d84cacadaac090
+        filename: ergomcutool-codecov-ubuntu.json
+        label: codecov
+        message: ${{ env.COVERAGE }}%
+        color: ${{ env.COLOR }}

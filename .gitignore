@@ -1,0 +1,34 @@
+# .gitignore for a GO project.
+# Based on https://github.com/github/gitignore/blob/master/Go.gitignore
+# Syntax guide: https://linuxize.com/post/gitignore-ignoring-files-in-git/
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+# Executables
+main
+ergomcutool
+ergomcutool.exe
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Temp directories at any level
+**/temp/
+**/_temp/
+**/tmp/
+**/deleteit/
+**/!deleteit/
+
+# Log directories at any level
+**/log/
+**/logs/
+
+# Other temporary files
+PRELIMINARY.md
