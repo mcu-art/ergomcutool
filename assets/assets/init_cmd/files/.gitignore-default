@@ -1,0 +1,82 @@
+# Directories at any level
+**/build/
+**/temp/
+**/tmp/
+
+
+# Directories at project root
+_external/
+_non_persistent/
+
+
+
+# VSCode
+# All files within .vscode folder are automatically generated
+# according to local settings and thus are not committed.
+.vscode/**/*
+
+# .vscode exceptions
+!.vscode/*.default.json
+
+
+# Ignore all local history of files
+**/.history
+
+# CubeMX
+.mxproject
+Makefile
+MDK-ARM/
+
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf

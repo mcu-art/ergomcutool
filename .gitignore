@@ -25,6 +25,7 @@ ergomcutool.exe
 **/tmp/
 **/deleteit/
 **/!deleteit/
+**/_non_persistent/
 
 # Log directories at any level
 **/log/

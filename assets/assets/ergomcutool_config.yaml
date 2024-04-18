@@ -1,0 +1,31 @@
+# ergomcu tool configuration
+# This file contains machine-specific information
+# that normally shouldn't be committed, e.g. local library paths,
+# your hardware description etc.
+
+general:
+  # Path to your ARM C compiler (usually arm-none-eabi-gcc)
+  arm_toolchain_path: /usr/bin
+
+openocd:
+  # Define the hardware you use to write data and debug the MCU.
+  # The extensive list of supported devices is usually located
+  # at /usr/share/openocd/scripts/interface/ in Ubuntu.
+  interface: stlink.cfg
+  # Path to openocd executable
+  bin_path:  /usr/bin/openocd
+  # Path to the openocd scripts directory
+  scripts_path: /usr/share/openocd/scripts
+
+
+# External project dependencies are libraries
+# that you may use in your projects.
+# Note that it is recommended to only specify paths
+# that you are NOT going to commit here.
+# Permanent paths should be specified
+# as a part of your project in ergomcu_project.yaml.
+external_dependencies:
+#  - var:                     EXAMPLE_LIB_PATH
+#    path:                    /path/to/example/lib
+#    create_in_project_link:  true
+#    symlink_name:            example_lib
