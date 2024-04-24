@@ -1,10 +1,9 @@
+// THIS IS A DUMMY COMMAND TO BE REMOVED
 package cli
 
 import (
 	"log"
 
-	"github.com/mcu-art/ergomcutool/config"
-	"github.com/mcu-art/ergomcutool/proj"
 	"github.com/spf13/cobra"
 )
 
@@ -29,17 +28,19 @@ func OnTemplateTestCmd(cmd *cobra.Command, args []string) {
 
 	}
 
-	r := &proj.ErgomcuProjectTemplateReplacements{
-		ErgomcutoolVersion: config.Version,
-		ProjectName:        "Dummy Project",
-		DeviceId:           "STM32F1x",
-		OpenocdTarget:      "STM32F103x",
-	}
-	err := proj.InstantiateFileErgomcuProjectYaml(
-		"./ergomcu_project.yaml", r, config.DefaultFilePermissions)
+	/*
+		r := &proj.ErgomcuProjectTemplateReplacements{
+			ErgomcutoolVersion: config.Version,
+			ProjectName:        "Dummy Project",
+			DeviceId:           "STM32F1x",
+			OpenocdTarget:      "STM32F103x",
+		}
+		err := proj.InstantiateFileErgomcuProjectYaml(
+			"./ergomcu_project.yaml", r, config.DefaultFilePermissions)
 
-	if err != nil {
-		log.Fatalf("error: template instantiation failed: %v\n", err)
-	}
+		if err != nil {
+			log.Fatalf("error: template instantiation failed: %v\n", err)
+		}
+	*/
 
 }

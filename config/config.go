@@ -23,7 +23,7 @@ var DefaultFilePermissions uint32 = 0664
 var DefaultDirPermissions uint32 = 0775
 
 var toolConfigWarningPrefix = "configuration warning:"
-var toolConfigWarningSuffix = "\nIt is recommended to fix the ergomcutool configuration."
+var toolConfigWarningSuffix = "\nIt is recommended to fix the configuration issues before you continue."
 
 var ToolConfig = &ToolConfigT{}
 
@@ -89,34 +89,47 @@ func (g *ToolConfig_OpenOcdT) Validate() error {
 	return nil
 }
 
-type ToolConfig_LibraryPathT struct {
-	Var  *string
-	Path *string
+type ExternalDependencyT struct {
+	Var                 *string `yaml:"var"`
+	Path                *string `yaml:"path"`
+	CreateInProjectLink bool    `yaml:"create_in_project_link"`
+	LinkName            *string `yaml:"link_name"`
 }
 
-func (g *ToolConfig_LibraryPathT) Validate() error {
+func (g *ExternalDependencyT) Validate() error {
 
 	if g.Var == nil {
-		return fmt.Errorf("library_paths:'var' parameter is not defined")
+		return fmt.Errorf("external_dependencies:'var' parameter is not defined")
 	}
 
 	if g.Path == nil {
-		return fmt.Errorf("library_paths:'path' parameter is not defined for %q",
+		return fmt.Errorf("external_dependencies:'path' parameter is not defined for %q",
 			*g.Var)
+	}
+
+	if g.CreateInProjectLink {
+		if g.LinkName == nil {
+			return fmt.Errorf("external_dependencies:'link_name' parameter must be defined if 'create_in_project_link' is true for variable %q",
+				*g.Var)
+		}
+		if *g.LinkName == "" {
+			return fmt.Errorf("external_dependencies:'link_name' parameter must not be empty if 'create_in_project_link' is true for variable %q",
+				*g.Var)
+		}
 	}
 
 	exists := utils.DirExists(*g.Path)
 	if !exists {
-		log.Printf("%s library_paths:'path' %q must specify an existing directory.%s\n",
+		log.Printf("%s external_dependencies:'path' %q must specify an existing directory.%s\n",
 			toolConfigWarningPrefix, *g.Path, toolConfigWarningSuffix)
 	}
 	return nil
 }
 
 type ToolConfigT struct {
-	General      *ToolConfig_GeneralT      `yaml:"general"`
-	Openocd      *ToolConfig_OpenOcdT      `yaml:"openocd"`
-	LibraryPaths []ToolConfig_LibraryPathT `yaml:"library_paths"`
+	General              *ToolConfig_GeneralT  `yaml:"general"`
+	Openocd              *ToolConfig_OpenOcdT  `yaml:"openocd"`
+	ExternalDependencies []ExternalDependencyT `yaml:"external_dependencies"`
 }
 
 func (g *ToolConfigT) String() string {
@@ -140,7 +153,7 @@ func readConfigFile(file string, config *ToolConfigT) error {
 }
 
 // copyTextFileEx copies text file from src to dest, prepends optional prefix
-// go each line.
+// to each line.
 func copyTextFileEx(src, dest string, prefix string, filePerm uint32) error {
 	data, err := os.ReadFile(src)
 	if err != nil {
@@ -276,10 +289,9 @@ Now you may proceed and re-run your command.`, userConfigFilePath)
 			msgPrefix, err, msgSuffix)
 	}
 
-	// TODO: change LibraryPaths to ExternalDependencies
-	if ToolConfig.LibraryPaths != nil {
-		for _, lp := range ToolConfig.LibraryPaths {
-			if err = lp.Validate(); err != nil {
+	if ToolConfig.ExternalDependencies != nil {
+		for _, d := range ToolConfig.ExternalDependencies {
+			if err = d.Validate(); err != nil {
 				log.Fatalf("%s %v.\n%s\n",
 					msgPrefix, err, msgSuffix)
 			}

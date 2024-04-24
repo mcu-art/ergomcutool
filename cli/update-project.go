@@ -33,6 +33,8 @@ func updateProject(cmd *cobra.Command, args []string) {
 	log.Printf("Updating the project...\n")
 	config.ParseErgomcutoolConfig(false)
 
+	// Read ergomcu_project.yaml
+
 	log.Printf("The project was successfully updated.")
 
 }

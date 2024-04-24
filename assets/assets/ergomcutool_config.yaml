@@ -18,14 +18,16 @@ openocd:
   scripts_path: /usr/share/openocd/scripts
 
 
-# External project dependencies are libraries
-# that you may use in your projects.
-# Note that it is recommended to only specify paths
-# that you are NOT going to commit here.
-# Permanent paths should be specified
-# as a part of your project in ergomcu_project.yaml.
+# External dependencies are libraries
+# or directories with source files that you may use in your projects.
+# This setting is the same as in the 'ergomcu_project.yaml' file,
+# but these values have precedence in case of a conflict.
+# Note that it is recommended to only specify machine-dependent paths
+# that you are NOT going to commit to the repository here.
+# Machine-independent paths should be specified as a part of your project
+# in the 'ergomcu_project.yaml'.
 external_dependencies:
-#  - var:                     EXAMPLE_LIB_PATH
+#  - var:                     EXAMPLE_LIB
 #    path:                    /path/to/example/lib
 #    create_in_project_link:  true
-#    symlink_name:            example_lib
+#    link_name:               example_lib

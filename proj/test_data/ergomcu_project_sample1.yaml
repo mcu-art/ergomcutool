@@ -1,0 +1,46 @@
+# ergomcutool project configuration file
+
+# Version of the ergomcutool that created this configuration file.
+ergomcutool_version: 1.0.0
+
+# project_name should be the same as
+# the ProjectManager.ProjectName in the .ioc file.
+project_name: project_sample1
+
+# device_id should be the same as
+# ProjectManager.DeviceId in the .ioc file.
+device_id:  dummy_device
+
+openocd:
+  disabled: false
+  # openocd target should match one of the file names in
+  # the openocd scripts/target directory.
+  target:  dummy_openocd_target
+
+# External project dependencies are libraries
+# or directories with source files that you may use in your project.
+# Note that it is recommended to only specify machine-independent paths
+# that you are going to commit here.
+# Machine-dependent, local paths should be specified
+# in either user or local ergomcutool_config.yaml.
+external_dependencies:
+ - var:                     EXAMPLE_LIB
+   path:                    ../common_files/your/lib
+   create_in_project_link:  true
+   link_name: 							example_lib
+   
+
+# C source files
+c_src:
+ - _external/example_lib/file1.c
+ - _external/example_lib/file2.c
+
+# Directories that contain C source files.
+# All .c files in that directory will be added to your project
+# in alphabetical order.
+c_src_dirs:
+ - dummy/src_dir
+
+# C include directories
+c_include_dirs:
+ - dummy/include_dir
