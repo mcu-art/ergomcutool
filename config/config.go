@@ -189,12 +189,11 @@ func copyAssetsIntoUserConfigDir() {
 	_ = os.Remove(src)
 }
 
-func ParseErgomcutoolConfig() {
-	// homeDir, err := os.UserHomeDir()
-	// if err != nil {
-	// 	log.Fatalf("failed to retrieve user home directory: %v\n", err)
-	// }
-
+// ParseErgomcutoolConfig parses ergomcutool configuration,
+// both user and local configurations are taken into account.
+// 'createLocalConfigIfNotExists': if true, creates a local configuration
+// file in CWD that is a commented-out copy of the current user configuration.
+func ParseErgomcutoolConfig(createLocalConfigIfNotExists bool) {
 	// Read user config file
 	userConfigFilePath := filepath.Join(UserConfigDir, UserConfigFileName)
 	err := readConfigFile(userConfigFilePath, ToolConfig)
@@ -226,24 +225,26 @@ Now you may proceed and re-run your command.`, userConfigFilePath)
 	err = readConfigFile(localConfigFilePath, ToolConfig)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			// Write a default configuration file
-			// Check if path exists
-			dirPath := filepath.Dir(localConfigFilePath)
-			if err = os.MkdirAll(dirPath, fs.FileMode(DefaultDirPermissions)); err != nil {
-				log.Fatalf("Failed to create local directory %q: %v\n",
-					dirPath, err)
-			}
-			if err = copyTextFileEx(
-				userConfigFilePath,
-				localConfigFilePath, "# ",
-				DefaultFilePermissions); err != nil {
-				log.Fatalf("Failed to write local configuration to file %q: %v\n",
-					localConfigFilePath, err)
-			}
+			if createLocalConfigIfNotExists {
+				// Write a default configuration file
+				// Check if path exists
+				dirPath := filepath.Dir(localConfigFilePath)
+				if err = os.MkdirAll(dirPath, fs.FileMode(DefaultDirPermissions)); err != nil {
+					log.Fatalf("Failed to create local directory %q: %v\n",
+						dirPath, err)
+				}
+				if err = copyTextFileEx(
+					userConfigFilePath,
+					localConfigFilePath, "# ",
+					DefaultFilePermissions); err != nil {
+					log.Fatalf("Failed to write local configuration to file %q: %v\n",
+						localConfigFilePath, err)
+				}
 
-			// Re-read file
-			if err = readConfigFile(localConfigFilePath, ToolConfig); err != nil {
-				log.Fatalf("Failed to read local configuration file: %+v\n", err)
+				// Re-read file
+				if err = readConfigFile(localConfigFilePath, ToolConfig); err != nil {
+					log.Fatalf("Failed to read local configuration file: %+v\n", err)
+				}
 			}
 		} else {
 			log.Fatalf("Failed to read local configuration file: %+v\n", err)
@@ -258,29 +259,29 @@ Now you may proceed and re-run your command.`, userConfigFilePath)
 
 	// Validate
 	msgPrefix := "error: ergomcutool configuration validation failed:"
-	msgPostfix := "Fix the configuration errors and try again."
+	msgSuffix := "Fix the configuration errors and try again."
 	if ToolConfig.General == nil {
-		log.Fatalf("%s 'general' section is missing.\n%s\n", msgPrefix, msgPostfix)
+		log.Fatalf("%s 'general' section is missing.\n%s\n", msgPrefix, msgSuffix)
 	}
 	if err = ToolConfig.General.Validate(); err != nil {
 		log.Fatalf("%s %v.\n%s\n",
-			msgPrefix, err, msgPostfix)
+			msgPrefix, err, msgSuffix)
 	}
 
 	if ToolConfig.Openocd == nil {
-		log.Fatalf("%s 'openocd' section is missing.\n%s\n", msgPrefix, msgPostfix)
+		log.Fatalf("%s 'openocd' section is missing.\n%s\n", msgPrefix, msgSuffix)
 	}
 	if err = ToolConfig.Openocd.Validate(); err != nil {
 		log.Fatalf("%s %v.\n%s\n",
-			msgPrefix, err, msgPostfix)
+			msgPrefix, err, msgSuffix)
 	}
 
+	// TODO: change LibraryPaths to ExternalDependencies
 	if ToolConfig.LibraryPaths != nil {
-		// log.Fatalf("%s 'openocd' section is missing.\n%s\n", msgPrefix, msgPostfix)
 		for _, lp := range ToolConfig.LibraryPaths {
 			if err = lp.Validate(); err != nil {
 				log.Fatalf("%s %v.\n%s\n",
-					msgPrefix, err, msgPostfix)
+					msgPrefix, err, msgSuffix)
 			}
 		}
 	}

@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mcu-art/ergomcutool/assets"
 	"github.com/mcu-art/ergomcutool/config"
 	"github.com/mcu-art/ergomcutool/iocfile"
+	"github.com/mcu-art/ergomcutool/proj"
 	"github.com/mcu-art/ergomcutool/tpl"
 	"github.com/mcu-art/ergomcutool/utils"
 	"github.com/spf13/cobra"
@@ -37,7 +37,7 @@ func OnInitCmd(cmd *cobra.Command, args []string) {
 	}
 	cwd, _ := os.Getwd()
 	log.Printf("Initializing a new project...\n")
-	config.ParseErgomcutoolConfig()
+	config.ParseErgomcutoolConfig(true)
 
 	// Read the .ioc file
 	fileNames, err := utils.GetDirFileList(cwd)
@@ -74,7 +74,7 @@ File %q will be used to collect the required data.
 		}
 	}
 
-	projectTemplateReplacements := &assets.ErgomcuProjectYamlReplacements{
+	projectTemplateReplacements := &proj.ErgomcuProjectTemplateReplacements{
 		ErgomcutoolVersion: config.Version,
 		ProjectName:        iocFileData.ProjectName,
 		DeviceId:           iocFileData.DeviceId,

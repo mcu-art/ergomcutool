@@ -8,18 +8,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var updateCmd = &cobra.Command{
-	Use:   "update",
-	Short: "Update project and regenerate makefile",
-	Run:   OnUpdateCmd,
+var updateProjectCmd = &cobra.Command{
+	Use:   "update-project",
+	Short: "Update project and patch makefile",
+	Run:   updateProject,
 }
 
 func init() {
-	rootCmd.AddCommand(updateCmd)
-	updateCmd.PersistentFlags().StringP("path", "p", "", "Path to project root directory")
+	rootCmd.AddCommand(updateProjectCmd)
+	updateProjectCmd.PersistentFlags().StringP("path", "p", "", "Path to project root directory")
 }
 
-func OnUpdateCmd(cmd *cobra.Command, args []string) {
+func updateProject(cmd *cobra.Command, args []string) {
 	if len(args) > 0 {
 		log.Fatalf("error: too many CLI argument(s): %+v\n", args)
 	}
@@ -31,7 +31,7 @@ func OnUpdateCmd(cmd *cobra.Command, args []string) {
 	}
 	// cwd, _ := os.Getwd()
 	log.Printf("Updating the project...\n")
-	config.ParseErgomcutoolConfig()
+	config.ParseErgomcutoolConfig(false)
 
 	log.Printf("The project was successfully updated.")
 

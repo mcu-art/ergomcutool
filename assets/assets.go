@@ -2,11 +2,6 @@ package assets
 
 import (
 	"embed"
-	"fmt"
-	"io/fs"
-	"log"
-	"os"
-	"text/template"
 
 	"github.com/mcu-art/ergomcutool/utils"
 )
@@ -14,8 +9,12 @@ import (
 //go:embed all:assets
 var EmbeddedAssets embed.FS
 
-var templatesLoaded bool
-var templateSet *template.Template
+//var templatesLoaded bool
+//var templateSet *template.Template
+
+func CopyAssets(dest string, dirPerm, filePerm uint32) error {
+	return utils.CopyEmbeddedDir(EmbeddedAssets, dest, dirPerm, filePerm)
+}
 
 /*
 func _copyAsset(src, dest string, filePerm uint32) error {
@@ -43,10 +42,6 @@ func copyAssetTemplate(src, dest string, filePerm uint32) error {
 	return _copyAsset(src, dest, filePerm)
 }
 */
-
-func CopyAssets(dest string, dirPerm, filePerm uint32) error {
-	return utils.CopyEmbeddedDir(EmbeddedAssets, dest, dirPerm, filePerm)
-}
 
 /*
 // CopyAssets copies all embedded assets into specified directory
@@ -108,6 +103,7 @@ func CopyAssets(dest string, dirPerm, filePerm uint32) error {
 }
 */
 
+/*
 // loadAssetTemplates loads and pareses templates from the embedded FS
 // into global variable `templateSet`.
 func loadAssetTemplates() {
@@ -145,6 +141,7 @@ func InstantiateAssetTemplate(templateFileName, dest string,
 
 	return nil
 }
+*/
 
 // DELETE IT
 

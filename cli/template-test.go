@@ -3,8 +3,8 @@ package cli
 import (
 	"log"
 
-	"github.com/mcu-art/ergomcutool/assets"
 	"github.com/mcu-art/ergomcutool/config"
+	"github.com/mcu-art/ergomcutool/proj"
 	"github.com/spf13/cobra"
 )
 
@@ -29,13 +29,13 @@ func OnTemplateTestCmd(cmd *cobra.Command, args []string) {
 
 	}
 
-	r := &assets.ErgomcuProjectYamlReplacements{
+	r := &proj.ErgomcuProjectTemplateReplacements{
 		ErgomcutoolVersion: config.Version,
 		ProjectName:        "Dummy Project",
 		DeviceId:           "STM32F1x",
 		OpenocdTarget:      "STM32F103x",
 	}
-	err := assets.InstantiateFileErgomcuProjectYaml(
+	err := proj.InstantiateFileErgomcuProjectYaml(
 		"./ergomcu_project.yaml", r, config.DefaultFilePermissions)
 
 	if err != nil {
