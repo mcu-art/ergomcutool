@@ -65,7 +65,7 @@ func FileExists(path string) bool {
 }
 
 func GetSortedFileList(path string, suffix string) ([]string, error) {
-	l, err := GetDirFileList(path)
+	l, err := GetFileList(path)
 	if err != nil {
 		return l, err
 	}
@@ -296,21 +296,9 @@ func ReadTextFile(path string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
-/*
-// GetDirFileList returns a list of files in the specified directory.
-func GetDirFileList(path string) ([]string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	return file.Readdirnames(0)
-}
-*/
-
-// GetDirFileList returns a list of regular files in the specified directory.
+// GetFileList returns a list of regular files in the specified directory.
 // Sub-directories and symlinks are not included.
-func GetDirFileList(path string) ([]string, error) {
+func GetFileList(path string) ([]string, error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -339,4 +327,44 @@ func GetSymlinkList(path string) ([]string, error) {
 		}
 	}
 	return result, nil
+}
+
+// ReadTextFileEx reads a text file into lines.
+// Trailing (only) whitespace of each line is trimmed.
+// Returns Lines, LineEnding, error.
+func ReadTextFileEx(path string) ([]string, string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, "", err
+	}
+	if len(data) == 0 {
+		return nil, "", fmt.Errorf("empty file")
+	}
+
+	lines := strings.Split(string(data), "\n")
+	if len(lines) <= 1 {
+		return nil, "", fmt.Errorf("unsupported line endings detected (bad file format?)")
+	}
+	carriageReturnDetected := false
+	r := make([]string, 0, len(lines))
+	lineEnding := ""
+	for i, line := range lines {
+		if strings.HasSuffix(line, "\r") {
+			carriageReturnDetected = true
+		}
+		line = TrimRightSpace(line)
+		if i < len(lines)-1 {
+			r = append(r, TrimRightSpace(line))
+		} else {
+			if len(line) > 0 {
+				r = append(r, line)
+			}
+		}
+	}
+	if carriageReturnDetected {
+		lineEnding = "\r\n"
+	} else {
+		lineEnding = "\n"
+	}
+	return r, lineEnding, nil
 }

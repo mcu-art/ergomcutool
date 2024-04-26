@@ -11,22 +11,22 @@ import (
 	"github.com/mcu-art/ergomcutool/config"
 )
 
-var initCmdTemplatesLoaded bool
-var initCmdTemplates *template.Template
+var templatesLoaded bool
+var assetTemplates *template.Template
 
-// loadInitCmdTemplates loads and pareses templates from the user config directory
-// into global variable `initCmdTemplates`.
-func loadInitCmdTemplates() {
-	path := filepath.Join(config.UserConfigDir, "assets", "init_cmd", "templates")
+// loadAssetTemplates loads and pareses templates from the user config directory
+// into global variable `assetTemplates`.
+func loadAssetTemplates() {
+	path := filepath.Join(config.UserConfigDir, "assets", "templates")
 	templatesFs := os.DirFS(path)
 
 	var err error
-	initCmdTemplates, err = template.New("initCmdTemplates").ParseFS(templatesFs, "*.tmpl")
+	assetTemplates, err = template.New("assetTemplates").ParseFS(templatesFs, "*.tmpl")
 	if err != nil {
 		log.Fatalf("failed to load templates from embedded assets: %v",
 			err)
 	}
-	initCmdTemplatesLoaded = true
+	templatesLoaded = true
 }
 
 // loadDirTemplates loads and pareses templates from the specified directory.
@@ -35,12 +35,14 @@ func loadDirTemplates(path, templateName string) (*template.Template, error) {
 	return template.New(templateName).ParseFS(templatesFs, "*.tmpl")
 }
 
-func InstantiateInitCmdTemplate(templateFileName, dest string,
+// InstantiateAssetTemplate instantiates the specified template file from
+// UserConfigDir assets/templates.
+func InstantiateAssetTemplate(templateFileName, dest string,
 	replacements any, filePerm uint32) error {
 
-	errMsgPrefix := "ergomcutool.InstantiateInitCmdTemplate: "
-	if !initCmdTemplatesLoaded {
-		loadInitCmdTemplates()
+	errMsgPrefix := "ergomcutool.InstantiateTemplate: "
+	if !templatesLoaded {
+		loadAssetTemplates()
 	}
 
 	file, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY, os.FileMode(filePerm))
@@ -49,7 +51,7 @@ func InstantiateInitCmdTemplate(templateFileName, dest string,
 	}
 	defer file.Close()
 
-	err = initCmdTemplates.ExecuteTemplate(file, templateFileName, replacements)
+	err = assetTemplates.ExecuteTemplate(file, templateFileName, replacements)
 	if err != nil {
 		log.Fatalf(errMsgPrefix+"template execution failed: %s", err)
 	}

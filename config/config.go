@@ -14,27 +14,36 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var Version = "1.0.0"
+var (
+	// ergomcutool version
+	Version = "1.0.0"
 
-// Owner, group: r+w, others: read only
-var DefaultFilePermissions uint32 = 0664
+	// Owner, group: r+w, others: read only
+	DefaultFilePermissions uint32 = 0664
 
-// Owner and group: full access, others: can't create new files
-var DefaultDirPermissions uint32 = 0775
+	// Special script permissions that allow execution
+	DefaultScriptPermissions uint32 = 0775
 
-var toolConfigWarningPrefix = "configuration warning:"
-var toolConfigWarningSuffix = "\nIt is recommended to fix the configuration issues before you continue."
+	// Owner and group: full access, others: can't create new files
+	DefaultDirPermissions uint32 = 0775
 
-var ToolConfig = &ToolConfigT{}
+	toolConfigWarningPrefix = "configuration warning:"
+
+	toolConfigWarningSuffix = "\nIt is recommended to fix the configuration issues before you continue."
+
+	// User-global ergomcutool configuration
+	ToolConfig = &ToolConfigT{}
+
+	UserConfigFileName = "ergomcutool_config.yaml"
+
+	UserConfigFilePath = filepath.Join(UserConfigDir, UserConfigFileName)
+)
 
 // user and local tool configuration file names
 var UserConfigDir = func() string {
 	homeDir, _ := os.UserHomeDir()
 	return filepath.Join(homeDir, ".ergomcutool")
 }()
-
-var UserConfigFileName = "ergomcutool_config.yaml"
-var UserConfigFilePath = filepath.Join(UserConfigDir, UserConfigFileName)
 
 // var UserLocalConfigFilePath = filepath.Join("_non_persistent", "ergomcutool_config.yaml")
 

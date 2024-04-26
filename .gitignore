@@ -19,13 +19,16 @@ ergomcutool.exe
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Directories at project root
+_non_persistent/
+_external/
+
 # Temp directories at any level
 **/temp/
 **/_temp/
 **/tmp/
 **/deleteit/
 **/!deleteit/
-**/_non_persistent/
 
 # Log directories at any level
 **/log/

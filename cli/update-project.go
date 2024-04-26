@@ -164,6 +164,11 @@ Generate the Makefile first using STM32CubeMX.
 		log.Fatalf("failed to read C_INCLUDES from the makefile: %v\n", err)
 	}
 	c_includes = append(c_includes, pc.CIncludeDirs...)
+	// Expand external dependencies in each line
+	c_includes, err = expandExternalDependencies(c_includes, externalDepExpansionMap)
+	if err != nil {
+		log.Fatalf("failed to expand external dependencies in C_INCLUDES: %v\n", err)
+	}
 	err = makefile.ReplaceValue("C_INCLUDES", c_includes)
 	if err != nil {
 		log.Fatalf("failed to replace C_INCLUDES in the makefile: %v\n", err)
@@ -177,6 +182,11 @@ Generate the Makefile first using STM32CubeMX.
 
 	c_defs = append(c_defs, pc.CDefs...)
 
+	// Expand external dependencies in each line
+	c_defs, err = expandExternalDependencies(c_defs, externalDepExpansionMap)
+	if err != nil {
+		log.Fatalf("failed to expand external dependencies in C_DEFS: %v\n", err)
+	}
 	err = makefile.ReplaceValue("C_DEFS", c_defs)
 	if err != nil {
 		log.Fatalf("failed to replace C_DEFS in the makefile: %v\n", err)
@@ -184,7 +194,7 @@ Generate the Makefile first using STM32CubeMX.
 
 	// Instantiate and append the 'prog' target
 	progSnippetUserDir := filepath.Join(config.UserConfigDir, "assets", "snippets")
-	progSnippetLocalDir := filepath.Join(cwd, ".ergomcutool", "assets", "snippets")
+	progSnippetLocalDir := filepath.Join(cwd, "_ergomcutool", "assets", "snippets")
 	progSnippetFileName := "prog_task.txt.tmpl"
 	instantiatedProgSnippet := ""
 	replacements := map[string]string{
