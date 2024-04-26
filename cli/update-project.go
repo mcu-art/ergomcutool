@@ -66,11 +66,21 @@ Generate the Makefile first using STM32CubeMX.
 
 	// Create the _external directory and links if needed
 	if len(pc.ExternalDependencies) > 0 {
+		createExternalDir := false
+		for _, d := range pc.ExternalDependencies {
+			if d.CreateInProjectLink {
+				createExternalDir = true
+				break
+			}
+		}
 		externalDir := filepath.Join(cwd, "_external")
-		if !utils.DirExists(externalDir) {
-			err := os.MkdirAll(externalDir, fs.FileMode(config.DefaultDirPermissions))
-			if err != nil {
-				log.Fatalf("failed to create directory %q: %v\n", externalDir, err)
+
+		if createExternalDir {
+			if !utils.DirExists(externalDir) {
+				err := os.MkdirAll(externalDir, fs.FileMode(config.DefaultDirPermissions))
+				if err != nil {
+					log.Fatalf("failed to create directory %q: %v\n", externalDir, err)
+				}
 			}
 		}
 
@@ -97,6 +107,7 @@ Generate the Makefile first using STM32CubeMX.
 			up_Makefile, err)
 	}
 	preEditedMakefilePath := filepath.Join(cwd, "_non_persistent", "Makefile.pre-edit")
+	moveMakefileToPreEdited := false
 	if makefile.IsAutoEdited() {
 		// Read the original version
 		makefile, err = mkf.FromFile(preEditedMakefilePath)
@@ -104,24 +115,21 @@ Generate the Makefile first using STM32CubeMX.
 			log.Fatalf("failed to read and parse %q: %v\n",
 				preEditedMakefilePath, err)
 		}
-	} else { // Makefile is not edited, move it to _non_persistent/Makefile.pre-edit
-		if utils.FileExists(preEditedMakefilePath) {
-			err = os.Remove(preEditedMakefilePath)
-			if err != nil {
-				log.Fatalf("failed to remove old %q: %v\n",
-					preEditedMakefilePath, err)
-			}
-		}
+	} else { // Makefile is not edited, move it later to _non_persistent/Makefile.pre-edit
+		moveMakefileToPreEdited = true
+	}
 
-		err = os.Rename(up_Makefile, preEditedMakefilePath)
-		if err != nil {
-			log.Fatalf("failed to move %q to %q: %v\n",
-				up_Makefile, preEditedMakefilePath, err)
-		}
+	if up_Verbose {
+		log.Printf("* original makefile contains %d lines.\n", len(makefile.Lines))
+	}
+
+	// Create external dependencies expansion map
+	externalDepExpansionMap := make(map[string]string, 0)
+	for _, d := range pc.ExternalDependencies {
+		externalDepExpansionMap[d.Var] = d.Path
 	}
 
 	// Merge values from the Makefile with project values
-
 	// c_src
 	c_src, err := makefile.ReadValue("C_SOURCES")
 	if err != nil {
@@ -139,6 +147,11 @@ Generate the Makefile first using STM32CubeMX.
 			fullName := filepath.Join(d, filename)
 			c_src = append(c_src, fullName)
 		}
+	}
+	// Expand external dependencies in each line
+	c_src, err = expandExternalDependencies(c_src, externalDepExpansionMap)
+	if err != nil {
+		log.Fatalf("failed to expand external dependencies in C_SOURCES: %v\n", err)
 	}
 	err = makefile.ReplaceValue("C_SOURCES", c_src)
 	if err != nil {
@@ -161,20 +174,13 @@ Generate the Makefile first using STM32CubeMX.
 	if err != nil {
 		log.Fatalf("failed to read C_DEFS from the makefile: %v\n", err)
 	}
+
 	c_defs = append(c_defs, pc.CDefs...)
+
 	err = makefile.ReplaceValue("C_DEFS", c_defs)
 	if err != nil {
 		log.Fatalf("failed to replace C_DEFS in the makefile: %v\n", err)
 	}
-
-	// BUILD_DIR
-	// TODO
-
-	// DEBUG (BUILD_MODE)
-	// TODO
-
-	// OPT
-	// TODO
 
 	// Instantiate and append the 'prog' target
 	progSnippetUserDir := filepath.Join(config.UserConfigDir, "assets", "snippets")
@@ -211,11 +217,6 @@ Generate the Makefile first using STM32CubeMX.
 			values := []string{*buildOptions.Debug}
 			_ = makefile.ReplaceValue("DEBUG", values)
 		}
-		// TODO: this should be placed in the init cmd!
-		// if buildOptions.IgnoreCubeActions != nil && !*buildOptions.IgnoreCubeActions {
-		// 	values := []string{*buildOptions.BuildDir}
-		// 	_ = makefile.ReplaceValue("BUILD_DIR", values)
-		// }
 		if buildOptions.OptimizationFlags != nil && *buildOptions.OptimizationFlags != "" {
 			values := []string{*buildOptions.OptimizationFlags}
 			_ = makefile.ReplaceValue("OPT", values)
@@ -225,10 +226,41 @@ Generate the Makefile first using STM32CubeMX.
 	// Insert auto-edited mark
 	_ = makefile.InsertAutoEditedMark()
 
+	if moveMakefileToPreEdited {
+		if utils.FileExists(preEditedMakefilePath) {
+			err = os.Remove(preEditedMakefilePath)
+			if err != nil {
+				log.Fatalf("failed to remove old %q: %v\n",
+					preEditedMakefilePath, err)
+			}
+		}
+
+		err = os.Rename(up_Makefile, preEditedMakefilePath)
+		if err != nil {
+			log.Fatalf("failed to move %q to %q: %v\n",
+				up_Makefile, preEditedMakefilePath, err)
+		}
+	}
+
+	if up_Verbose {
+		log.Printf("* updated makefile contains %d lines.\n", len(makefile.Lines))
+	}
+
 	err = os.WriteFile(up_Makefile, makefile.Bytes(), fs.FileMode(config.DefaultFilePermissions))
 	if err != nil {
-		log.Fatalf("failed to write patched %q: %v\n", up_Makefile, err)
+		log.Fatalf("failed to write the updated %q: %v\n", up_Makefile, err)
 	}
 	log.Printf("The project was successfully updated.")
+}
 
+func expandExternalDependencies(s []string, replacements any) ([]string, error) {
+	r := make([]string, 0, len(s))
+	for _, l := range s {
+		expanded, err := tpl.InstantiateFromString(l, replacements)
+		if err != nil {
+			return r, err
+		}
+		r = append(r, expanded)
+	}
+	return r, nil
 }

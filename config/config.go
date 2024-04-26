@@ -155,29 +155,11 @@ type BuildOptionsT struct {
 	BuildDir          *string `yaml:"build_dir"`
 	Debug             *string `yaml:"debug"`
 	OptimizationFlags *string `yaml:"optimization_flags"`
-	IgnoreCubeActions *bool   `yaml:"ignore_cubemx_actions"`
 }
 
 // Validate validates the build options.
 // Currently, nil values are considered legitimate.
 func (o *BuildOptionsT) Validate() error {
-	/*
-		if o.BuildDir == nil || *o.BuildDir == "" {
-			return fmt.Errorf("build_options:'build_dir' parameter is not defined")
-		}
-
-		if o.Debug == nil || *o.Debug == "" {
-			return fmt.Errorf("build_options:'debug' parameter is not defined")
-		}
-
-		if o.OptimizationFlags == nil || *o.OptimizationFlags == "" {
-			return fmt.Errorf("build_options:'optimization_flags' parameter is not defined")
-		}
-
-		if o.IgnoreCubeActions == nil {
-			return fmt.Errorf("build_options:'ignore_cubemx_actions' parameter is not defined")
-		}
-	*/
 	if o.Debug != nil {
 		if !(*o.Debug == "0" || *o.Debug == "1") {
 			return fmt.Errorf("build_options:'debug' must have value '0' or '1'")

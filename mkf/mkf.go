@@ -1,4 +1,4 @@
-// package mkf is for working with a Makefile.
+// mkf package works with makefiles.
 package mkf
 
 import (
@@ -12,9 +12,9 @@ import (
 )
 
 type ParsedMkf struct {
-	// IsAutoEdited is true if the Makefile has been patched by ergomcutool
+	// IsAutoEdited is true if the Makefile has been edited by ergomcutool
 	IsAutoEdited bool
-	// ErgomcutoolVersion is the version of ergomcutool that patched the Makefile
+	// ErgomcutoolVersion is the version of ergomcutool that edited the Makefile
 	ErgomcutoolVersion string
 	// Debug is 1 if the Debug mode is selected, or 0 in Release mode.
 	Debug string
@@ -45,7 +45,7 @@ type Mkf struct {
 }
 
 var (
-	AutoEditedMarkComment = `# This file was patched by ergomcutool:`
+	AutoEditedMarkComment = `# This file was edited by ergomcutool:`
 	AutoEditedMarkPrefix  = "# ERGOMCUTOOL_VERSION ="
 	ErrValueNotFound      = errors.New("value not found")
 	ErrEntryNotFound      = errors.New("entry not found")
@@ -62,26 +62,30 @@ func FromFile(path string) (m *Mkf, err error) {
 	if len(data) == 0 {
 		return m, fmt.Errorf("empty file")
 	}
-	dataString := strings.Split(string(data), "\r\n")
-	if len(dataString) == 1 {
-		dataString = strings.Split(string(data), "\n")
-		if len(dataString) == 1 {
-			return m, fmt.Errorf("unsupported line endings detected (bad file format?)")
-		}
-		m.LineEnding = "\n"
-	} else {
-		m.LineEnding = "\r\n"
-	}
 
-	// Trim trailing whitespace and remove last element if empty
-	lastElementIndex := len(dataString) - 1
-	for i := 0; i < lastElementIndex; i++ {
-		// Trim only trailing whitespace!
-		m.Lines = append(m.Lines, utils.TrimRightSpace(dataString[i]))
+	lines := strings.Split(string(data), "\n")
+	if len(lines) <= 1 {
+		return m, fmt.Errorf("unsupported line endings detected (bad file format?)")
 	}
-	lastElement := utils.TrimRightSpace(dataString[lastElementIndex])
-	if lastElement != "" {
-		m.Lines = append(m.Lines, lastElement)
+	carriageReturnDetected := false
+
+	for i, line := range lines {
+		if strings.HasSuffix(line, "\r") {
+			carriageReturnDetected = true
+		}
+		line = utils.TrimRightSpace(line)
+		if i < len(lines)-1 {
+			m.Lines = append(m.Lines, utils.TrimRightSpace(line))
+		} else {
+			if len(line) > 0 {
+				m.Lines = append(m.Lines, line)
+			}
+		}
+	}
+	if carriageReturnDetected {
+		m.LineEnding = "\r\n"
+	} else {
+		m.LineEnding = "\n"
 	}
 	return m, err
 }
@@ -251,13 +255,13 @@ func (m *Mkf) ReadValue(entryName string) ([]string, error) {
 	checkNextLine := false
 	for _, line := range m.Lines {
 		if checkNextLine {
-			line = strings.TrimSpace(line)
+			line = utils.TrimRightSpace(line)
 			if len(line) == 0 {
 				return r, nil
 			}
 			// Check if last character is '\'
-			if line[len(line)-1] == '\\' {
-				line = strings.TrimSpace(line[:len(line)-1])
+			if strings.HasSuffix(line, "\\") {
+				line = utils.TrimRightSpace(line[:len(line)-1])
 				if line != "" {
 					r = append(r, line)
 				}
@@ -282,7 +286,8 @@ func (m *Mkf) ReadValue(entryName string) ([]string, error) {
 				return r, nil
 			}
 			// Check if last character is '\'
-			if value[valueLength-1] == '\\' {
+			//if value[valueLength-1] == '\\' {
+			if strings.HasSuffix(value, "\\") {
 				value = strings.TrimSpace(value[:valueLength-1])
 				checkNextLine = true
 				if value != "" {

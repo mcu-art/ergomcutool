@@ -37,15 +37,17 @@ func TestReadValue(t *testing.T) {
 
 	vals, err = m.ReadValue("C_SOURCES")
 	require.Nil(t, err)
-	// for i, v := range vals {
-	// 	fmt.Printf("%d. %v\n", i+1, v)
-	// }
+
 	require.Equal(t, 27, len(vals), "C_SOURCES entry must contain 27 values")
 
 	vals, err = m.ReadValue("C_DEFS")
 	require.Nil(t, err)
 	require.Equal(t, []string{"-DUSE_HAL_DRIVER", "-DSTM32G431xx"}, vals,
 		"C_DEFS entry must contain 2 values")
+	// for i, v := range vals {
+	// 	fmt.Printf("%d. %v\n", i+1, v)
+	// }
+	// require.True(t, false)
 
 	_, err = m.ReadValue("NON_EXISTING_VALUE")
 	require.ErrorIs(t, err, ErrEntryNotFound)

@@ -71,3 +71,18 @@ func InstantiateToString(
 	}
 	return buff.String(), nil
 }
+
+// InstantiateFromString instantiates a template passed as a string.
+func InstantiateFromString(ts string, replacements any) (string, error) {
+	t1 := template.New("t1")
+	t1, err := t1.Parse(ts)
+	if err != nil {
+		return "", nil
+	}
+	var buff bytes.Buffer
+	err = t1.Execute(&buff, replacements)
+	if err != nil {
+		return "", nil
+	}
+	return buff.String(), nil
+}
