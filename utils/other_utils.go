@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"unicode"
 )
 
 // StructToMap converts any struct into map[string]any
@@ -30,4 +31,10 @@ func GetUserConfirmationViaConsole(prompt string) bool {
 		return true
 	}
 	return false
+}
+
+// TrimRightSpace trims all trailing whitespace characters.
+// See https://www.danielmorell.com/blog/how-to-trim-whitespace-from-a-string-in-go
+func TrimRightSpace(s string) string {
+	return strings.TrimRightFunc(s, unicode.IsSpace)
 }

@@ -18,20 +18,21 @@ openocd:
 
 # External project dependencies are libraries
 # or directories with source files that you may use in your project.
-# Note that it is recommended to only specify machine-independent paths
-# that you are going to commit here.
+# Note that it is recommended to only specify here machine-independent paths
+# that you are going to commit.
 # Machine-dependent, local paths should be specified
 # in either user or local ergomcutool_config.yaml.
 external_dependencies:
 #  - var:                     EXAMPLE_LIB
 #    path:                    ../common_files/your/lib
 #    create_in_project_link:  true
-#    link_name:            example_lib
+#    link_name:               example_lib
 
-# C source files
+# C source files. You may use external_dependencies 'var' values.
 c_src:
 #  - _external/example_lib/file1.c
-#  - _external/example_lib/file2.c
+#  - {{"{{"}}.EXAMPLE_LIB{{"}}"}}/file2.c
+
 
 # Directories that contain C source files.
 # All .c files in that directory will be added to your project
@@ -42,3 +43,6 @@ c_src_dirs:
 # C include directories
 c_include_dirs:
 #  - _external/example_lib/include
+
+c_defs:
+# - -D_EXAMPLE_DEFINITION

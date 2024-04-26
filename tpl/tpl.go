@@ -1,6 +1,7 @@
 package tpl
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -28,6 +29,12 @@ func loadInitCmdTemplates() {
 	initCmdTemplatesLoaded = true
 }
 
+// loadDirTemplates loads and pareses templates from the specified directory.
+func loadDirTemplates(path, templateName string) (*template.Template, error) {
+	templatesFs := os.DirFS(path)
+	return template.New(templateName).ParseFS(templatesFs, "*.tmpl")
+}
+
 func InstantiateInitCmdTemplate(templateFileName, dest string,
 	replacements any, filePerm uint32) error {
 
@@ -48,4 +55,19 @@ func InstantiateInitCmdTemplate(templateFileName, dest string,
 	}
 
 	return nil
+}
+
+func InstantiateToString(
+	dirWithTemplates, templateFileName string, replacements any) (string, error) {
+	templates, err := loadDirTemplates(dirWithTemplates, templateFileName)
+	if err != nil {
+		return "", err
+	}
+	var buff bytes.Buffer
+	err = templates.ExecuteTemplate(&buff, templateFileName, replacements)
+	joinedPath := filepath.Join(dirWithTemplates, templateFileName)
+	if err != nil {
+		return "", fmt.Errorf("template execution failed for %q: %v", joinedPath, err)
+	}
+	return buff.String(), nil
 }

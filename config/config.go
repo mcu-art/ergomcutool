@@ -90,38 +90,98 @@ func (g *ToolConfig_OpenOcdT) Validate() error {
 }
 
 type ExternalDependencyT struct {
-	Var                 *string `yaml:"var"`
-	Path                *string `yaml:"path"`
-	CreateInProjectLink bool    `yaml:"create_in_project_link"`
-	LinkName            *string `yaml:"link_name"`
+	Var                 string `yaml:"var"`
+	Path                string `yaml:"path"`
+	CreateInProjectLink bool   `yaml:"create_in_project_link"`
+	LinkName            string `yaml:"link_name"`
 }
 
+// MergeSpecial merges two external dependencies.
+// 'projectSetting' is supposed to be from the project configuration,
+// and 'configSetting' - from the tool configuration.
+// 'Var' fields are supposed to be equal and are not modified.
+// 'projectSetting.CreateInProjectLink' is only modified if
+// 'configSetting.CreateInProjectLink==true'
+// Precedence has: 'configSetting.Path',
+// 'projectSetting.LinkName' is only modified if
+// 'configSetting.LinkName' is not empty.
+func (projectSetting *ExternalDependencyT) MergeSpecial(configSetting *ExternalDependencyT) {
+	if projectSetting.Var != configSetting.Var {
+		return
+	}
+	if configSetting.CreateInProjectLink {
+		projectSetting.CreateInProjectLink = true
+	}
+	if configSetting.Path != "" {
+		projectSetting.Path = configSetting.Path
+	}
+	if configSetting.LinkName != "" {
+		projectSetting.LinkName = configSetting.LinkName
+	}
+}
+
+// Validate validates the external dependency.
 func (g *ExternalDependencyT) Validate() error {
 
-	if g.Var == nil {
+	if g.Var == "" {
 		return fmt.Errorf("external_dependencies:'var' parameter is not defined")
 	}
 
-	if g.Path == nil {
+	if g.Path == "" {
 		return fmt.Errorf("external_dependencies:'path' parameter is not defined for %q",
-			*g.Var)
+			g.Var)
 	}
 
 	if g.CreateInProjectLink {
-		if g.LinkName == nil {
+		if g.LinkName == "" {
 			return fmt.Errorf("external_dependencies:'link_name' parameter must be defined if 'create_in_project_link' is true for variable %q",
-				*g.Var)
+				g.Var)
 		}
-		if *g.LinkName == "" {
+		if g.LinkName == "" {
 			return fmt.Errorf("external_dependencies:'link_name' parameter must not be empty if 'create_in_project_link' is true for variable %q",
-				*g.Var)
+				g.Var)
 		}
 	}
 
-	exists := utils.DirExists(*g.Path)
+	exists := utils.DirExists(g.Path)
 	if !exists {
 		log.Printf("%s external_dependencies:'path' %q must specify an existing directory.%s\n",
-			toolConfigWarningPrefix, *g.Path, toolConfigWarningSuffix)
+			toolConfigWarningPrefix, g.Path, toolConfigWarningSuffix)
+	}
+	return nil
+}
+
+type BuildOptionsT struct {
+	BuildDir          *string `yaml:"build_dir"`
+	Debug             *string `yaml:"debug"`
+	OptimizationFlags *string `yaml:"optimization_flags"`
+	IgnoreCubeActions *bool   `yaml:"ignore_cubemx_actions"`
+}
+
+// Validate validates the build options.
+// Currently, nil values are considered legitimate.
+func (o *BuildOptionsT) Validate() error {
+	/*
+		if o.BuildDir == nil || *o.BuildDir == "" {
+			return fmt.Errorf("build_options:'build_dir' parameter is not defined")
+		}
+
+		if o.Debug == nil || *o.Debug == "" {
+			return fmt.Errorf("build_options:'debug' parameter is not defined")
+		}
+
+		if o.OptimizationFlags == nil || *o.OptimizationFlags == "" {
+			return fmt.Errorf("build_options:'optimization_flags' parameter is not defined")
+		}
+
+		if o.IgnoreCubeActions == nil {
+			return fmt.Errorf("build_options:'ignore_cubemx_actions' parameter is not defined")
+		}
+	*/
+	if o.Debug != nil {
+		if !(*o.Debug == "0" || *o.Debug == "1") {
+			return fmt.Errorf("build_options:'debug' must have value '0' or '1'")
+		}
 	}
 	return nil
 }
@@ -130,6 +190,7 @@ type ToolConfigT struct {
 	General              *ToolConfig_GeneralT  `yaml:"general"`
 	Openocd              *ToolConfig_OpenOcdT  `yaml:"openocd"`
 	ExternalDependencies []ExternalDependencyT `yaml:"external_dependencies"`
+	BuildOptions         *BuildOptionsT        `yaml:"build_options"`
 }
 
 func (g *ToolConfigT) String() string {
@@ -194,12 +255,32 @@ func copyAssetsIntoUserConfigDir() {
 	// Move user config file from assets dir to user config dir
 	src := filepath.Join(UserConfigDir, "assets", UserConfigFileName)
 	dest := filepath.Join(UserConfigDir, UserConfigFileName)
-	err = utils.CopyFile(src, dest)
-	if err != nil {
-		log.Fatalf("failed to copy %q into %q: %v\n",
-			src, dest, err)
+	_ = os.Rename(src, dest)
+}
+
+func CheckUserConfigDirExists() bool {
+	return utils.DirExists(UserConfigDir)
+}
+
+// CreateUserConfig creates user config directory and its contents.
+// If the directory already exists, it returns error.
+func CreateUserConfig() error {
+	if utils.DirExists(UserConfigDir) {
+		return fmt.Errorf("user configuration directory already exists")
 	}
-	_ = os.Remove(src)
+	// Copy assets from the embedded FS
+	copyAssetsIntoUserConfigDir()
+	return nil
+}
+
+// EnsureUserConfigExists checks that ergomcutool user config directory
+// exists. If not, it prints error message and exists with an error.
+func EnsureUserConfigExists() {
+	if !utils.DirExists(UserConfigDir) {
+		log.Fatalf(`error: ergomcutool is not initialized yet.
+Run 'ergomcutool init' first.
+`)
+	}
 }
 
 // ParseErgomcutoolConfig parses ergomcutool configuration,
@@ -212,24 +293,29 @@ func ParseErgomcutoolConfig(createLocalConfigIfNotExists bool) {
 	err := readConfigFile(userConfigFilePath, ToolConfig)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			// Copy assets from the embedded FS
-			copyAssetsIntoUserConfigDir()
-			// Re-read file
-			if err = readConfigFile(userConfigFilePath, ToolConfig); err != nil {
-				log.Fatalf("failed to read user configuration file: %+v\n", err)
-			}
-			// Print message about first run and exit
-			firstRunMsg := fmt.Sprintf(`IMPORTANT!
-You've just run ergomcutool for the first time on your machine.
-Your command hasn't been executed,
-but new user settings have been generated.
-In case you want to review them,
-check %q.
-Now you may proceed and re-run your command.`, userConfigFilePath)
-			log.Println(firstRunMsg)
-			os.Exit(0)
+			log.Fatalf("error: ergomcutool configuration file doesn't exist, please run 'ergomcutool init' first.\n")
+
+			// os.Exit(0)
+			/*
+
+							// Copy assets from the embedded FS
+							copyAssetsIntoUserConfigDir()
+							// Re-read file
+							if err = readConfigFile(userConfigFilePath, ToolConfig); err != nil {
+								log.Fatalf("failed to read user configuration file: %+v\n", err)
+							}
+							// Print message about first run and exit
+							firstRunMsg := fmt.Sprintf(`IMPORTANT!
+				You've just run ergomcutool for the first time on your machine.
+				Your command hasn't been executed,
+				but new user settings have been generated.
+				In case you want to review them,
+				check %q.
+				Now you may proceed and re-run your command.`, userConfigFilePath)
+							log.Println(firstRunMsg)
+			*/
 		} else {
-			log.Fatalf("Failed to read user configuration file: %+v\n", err)
+			log.Fatalf("error: failed to read user configuration file: %+v\n", err)
 		}
 	}
 
@@ -289,12 +375,21 @@ Now you may proceed and re-run your command.`, userConfigFilePath)
 			msgPrefix, err, msgSuffix)
 	}
 
-	if ToolConfig.ExternalDependencies != nil {
-		for _, d := range ToolConfig.ExternalDependencies {
-			if err = d.Validate(); err != nil {
-				log.Fatalf("%s %v.\n%s\n",
-					msgPrefix, err, msgSuffix)
-			}
+	if ToolConfig.BuildOptions != nil {
+		err = ToolConfig.BuildOptions.Validate()
+		if err != nil {
+			log.Fatalf("%s 'build_options' validation failed: %v.\n%s\n", msgPrefix, err, msgSuffix)
 		}
 	}
+
+	// Do not validate external dependencies here, they are validated
+	// only on update-project cmd
+
+	// for _, d := range ToolConfig.ExternalDependencies {
+	// 	if err = d.Validate(); err != nil {
+	// 		log.Fatalf("%s %v.\n%s\n",
+	// 			msgPrefix, err, msgSuffix)
+	// 	}
+	// }
+
 }

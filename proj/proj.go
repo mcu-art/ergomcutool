@@ -18,20 +18,6 @@ type ErgomcuProjectTemplateReplacements struct {
 	OpenocdTarget      string
 }
 
-/*
-// InstantiateFileErgomcuProjectYaml instantiates ergomcu_project.yaml
-// from the template read from embedded assets.
-func InstantiateFileErgomcuProjectYaml(
-	destPath string,
-	r *ErgomcuProjectTemplateReplacements, filePerm uint32) error {
-	err := tpl.InstantiateInitCmdTemplate(
-		"ergomcu_project.yaml.tmpl",
-		destPath,
-		r, filePerm)
-	return err
-}
-*/
-
 type ErgomcuProjectT struct {
 	ErgomcutoolVersion   *string                      `yaml:"ergomcutool_version"`
 	ProjectName          *string                      `yaml:"project_name"`
@@ -41,7 +27,7 @@ type ErgomcuProjectT struct {
 	CSrc                 []string                     `yaml:"c_src"`
 	CSrcDirs             []string                     `yaml:"c_src_dirs"`
 	CIncludeDirs         []string                     `yaml:"c_include_dirs"`
-	JoinedExternalDeps   []string                     `yaml:"-"`
+	CDefs                []string                     `yaml:"c_defs"`
 }
 
 func (p *ErgomcuProjectT) String() string {
@@ -115,17 +101,54 @@ func ReadAndValidate(path string) (*ErgomcuProjectT, error) {
 			msgPrefix, err, msgSuffix)
 	}
 
-	if r.ExternalDependencies != nil {
-		for _, d := range r.ExternalDependencies {
-			if err = d.Validate(); err != nil {
-				log.Fatalf("%s %v.\n%s\n",
-					msgPrefix, err, msgSuffix)
+	// Merge ExternalDependencies:
+	r.ExternalDependencies = mergeExternalDeps(r.ExternalDependencies)
+
+	// Validate merged dependencies
+	for _, d := range r.ExternalDependencies {
+		if err = d.Validate(); err != nil {
+			log.Fatalf("%s %v.\n%s\n",
+				msgPrefix, err, msgSuffix)
+		}
+	}
+
+	return r, nil
+}
+
+func mergeExternalDeps(projectExternalDeps []config.ExternalDependencyT) []config.ExternalDependencyT {
+	r := make([]config.ExternalDependencyT, 0,
+		len(projectExternalDeps)+len(config.ToolConfig.ExternalDependencies))
+
+	// For each project dependency,
+	// check if there is same dependency in the config
+	commonDependencies := make(map[string]config.ExternalDependencyT, len(projectExternalDeps))
+	for _, d := range projectExternalDeps {
+		for _, other := range config.ToolConfig.ExternalDependencies {
+			if d.Var == other.Var {
+				d.MergeSpecial(&other)
+				commonDependencies[d.Var] = d
 			}
 		}
 	}
 
-	// Create JoinedExternalDeps:
-	// in case of conflict, local versions take precedence.
+	// Append unique dependencies
+	for _, d := range projectExternalDeps {
+		_, ok := commonDependencies[d.Var]
+		if !ok {
+			r = append(r, d)
+		}
+	}
+	for _, d := range config.ToolConfig.ExternalDependencies {
+		_, ok := commonDependencies[d.Var]
+		if !ok {
+			r = append(r, d)
+		}
+	}
 
-	return r, nil
+	// Append common dependencies
+	for _, d := range commonDependencies {
+		r = append(r, d)
+	}
+
+	return r
 }

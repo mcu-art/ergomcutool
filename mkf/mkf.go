@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/mcu-art/ergomcutool/config"
+	"github.com/mcu-art/ergomcutool/utils"
 )
 
 type ParsedMkf struct {
@@ -44,7 +45,7 @@ type Mkf struct {
 }
 
 var (
-	AutoEditedMarkComment = `# This file was automatically edited by ergomcutool:`
+	AutoEditedMarkComment = `# This file was patched by ergomcutool:`
 	AutoEditedMarkPrefix  = "# ERGOMCUTOOL_VERSION ="
 	ErrValueNotFound      = errors.New("value not found")
 	ErrEntryNotFound      = errors.New("entry not found")
@@ -72,9 +73,15 @@ func FromFile(path string) (m *Mkf, err error) {
 		m.LineEnding = "\r\n"
 	}
 
-	// Trim whitespace and remove last empty element
-	for i := 0; i < len(dataString)-1; i++ {
-		m.Lines = append(m.Lines, strings.TrimSpace(dataString[i]))
+	// Trim trailing whitespace and remove last element if empty
+	lastElementIndex := len(dataString) - 1
+	for i := 0; i < lastElementIndex; i++ {
+		// Trim only trailing whitespace!
+		m.Lines = append(m.Lines, utils.TrimRightSpace(dataString[i]))
+	}
+	lastElement := utils.TrimRightSpace(dataString[lastElementIndex])
+	if lastElement != "" {
+		m.Lines = append(m.Lines, lastElement)
 	}
 	return m, err
 }
@@ -337,11 +344,11 @@ func (m *Mkf) Parse() (*ParsedMkf, error) {
 	return r, nil
 }
 
-func (m *Mkf) GetBytes() []byte {
-	return []byte(m.GetString())
+func (m *Mkf) Bytes() []byte {
+	return []byte(m.String())
 }
 
-func (m *Mkf) GetString() string {
+func (m *Mkf) String() string {
 	b := strings.Builder{}
 	for _, line := range m.Lines {
 		b.WriteString(line)

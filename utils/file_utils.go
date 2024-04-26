@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -61,6 +62,41 @@ func FileExists(path string) bool {
 		return true
 	}
 	return false
+}
+
+func GetSortedFileList(path string, suffix string) ([]string, error) {
+	l, err := GetDirFileList(path)
+	if err != nil {
+		return l, err
+	}
+	r := make([]string, 0, len(l))
+	for _, f := range l {
+		if strings.HasSuffix(f, suffix) {
+			r = append(r, f)
+		}
+	}
+	sort.Strings(r)
+	return r, nil
+}
+
+// func SymlinkExists(path string) bool {
+// 	path, _ = homedir.Expand(path)
+// 	if stat, err := os.Stat(path); err == nil && (!stat.IsDir() && !stat.Mode().IsRegular()) {
+// 		return true
+// 	}
+// 	return false
+// }
+
+// See https://stackoverflow.com/a/58148921/3824328
+func CreateOrReplaceSymlink(symlinkPath, target string) error {
+	if _, err := os.Lstat(symlinkPath); err == nil {
+		if err := os.Remove(symlinkPath); err != nil {
+			return fmt.Errorf("failed to unlink: %w", err)
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to check symlink: %w", err)
+	}
+	return os.Symlink(target, symlinkPath)
 }
 
 // CopyFile copies the contents of the file named src to the file named
@@ -283,6 +319,22 @@ func GetDirFileList(path string) ([]string, error) {
 	for _, file := range files {
 		//fmt.Println(file.Name(), file.IsDir())
 		if file.Type().IsRegular() {
+			result = append(result, file.Name())
+		}
+	}
+	return result, nil
+}
+
+// GetSymlinkList returns a list of symlinks in the specified directory.
+// Sub-directories are not included.
+func GetSymlinkList(path string) ([]string, error) {
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]string, 0, 100)
+	for _, file := range files {
+		if !file.Type().IsDir() && !file.Type().IsRegular() {
 			result = append(result, file.Name())
 		}
 	}
