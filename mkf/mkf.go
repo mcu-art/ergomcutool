@@ -4,8 +4,12 @@ package mkf
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mcu-art/ergomcutool/config"
 	"github.com/mcu-art/ergomcutool/utils"
@@ -360,4 +364,74 @@ func (m *Mkf) String() string {
 		b.WriteString(m.LineEnding)
 	}
 	return b.String()
+}
+
+// BackupMakefile moves specified makefile to
+// '_non_persistent/backups/makefile/'.
+func BackupMakefile(makefilePath string) error {
+	backupDir := filepath.Join("_non_persistent", "backups", "makefile")
+	err := os.MkdirAll(backupDir, fs.FileMode(config.DefaultDirPermissions))
+	if err != nil {
+		return fmt.Errorf("(BackupMakefile) failed to create directory %q: %w", backupDir, err)
+	}
+	// Get a list of backup files.
+	buFiles, err := utils.GetFileList(backupDir)
+	if err != nil {
+		return fmt.Errorf("(BackupMakefile) failed get file list of %q: %w", backupDir, err)
+	}
+
+	// Get the first and the last file prefix
+	var minFilePrefix uint64 = 0xFFFFFFFF
+	var maxFilePrefix uint64 = 0
+	for _, file := range buFiles {
+		split := strings.Split(file, "-")
+		if len(split) < 2 {
+			continue
+		}
+		prefixNum, err := strconv.ParseUint(split[0], 10, 32)
+		if err != nil {
+			continue
+		}
+		if prefixNum > maxFilePrefix {
+			maxFilePrefix = prefixNum
+		}
+		if prefixNum < minFilePrefix {
+			minFilePrefix = prefixNum
+		}
+	}
+	// Generate file name for new backup
+
+	t := time.Now()
+	date := t.Format("2006_01_02")
+	fileName := fmt.Sprintf("%d-makefile-%s", maxFilePrefix+1, date)
+	dest := filepath.Join(backupDir, fileName)
+	err = os.Rename(makefilePath, dest)
+	if err != nil {
+		return fmt.Errorf(
+			"(BackupMakefile) failed move file %q to %q: %w", makefilePath, dest, err)
+	}
+
+	// Remove old backups if number of backup files exceeds limit
+	if len(buFiles)+1 > config.MakefileBackupsLimit {
+		leastPrefix := fmt.Sprintf("%d-", minFilePrefix)
+		fileName = ""
+		for _, file := range buFiles {
+			if strings.HasPrefix(file, leastPrefix) {
+				fileName = file
+				break
+			}
+		}
+		if fileName == "" {
+			return fmt.Errorf(
+				"(BackupMakefile) failed to find file with prefix %q: %w",
+				leastPrefix, err)
+		}
+		dest := filepath.Join(backupDir, fileName)
+		err = os.Remove(dest)
+		if err != nil {
+			return fmt.Errorf(
+				"(BackupMakefile) failed remove file %q: %w", dest, err)
+		}
+	}
+	return nil
 }

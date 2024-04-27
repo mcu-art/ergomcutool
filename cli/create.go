@@ -199,7 +199,7 @@ File %q will be used to collect the required data.
 	// Update the .ioc file
 	if iocFile != "" {
 		// Remove old backup file and create new
-		backupFile := filepath.Join("_non_persistent", iocFile+".backup")
+		backupFile := filepath.Join("_non_persistent", "backups", iocFile+".backup")
 		_ = os.Remove(backupFile)
 		_ = os.Rename(iocFile, backupFile)
 		err = os.WriteFile(

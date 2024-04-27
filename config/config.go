@@ -37,6 +37,9 @@ var (
 	UserConfigFileName = "ergomcutool_config.yaml"
 
 	UserConfigFilePath = filepath.Join(UserConfigDir, UserConfigFileName)
+
+	// Number of makefile backup files
+	MakefileBackupsLimit = 3
 )
 
 // user and local tool configuration file names
