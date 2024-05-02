@@ -9,7 +9,9 @@ import (
 
 var appShortDescription = fmt.Sprintf("ergomcutool version %s", config.Version)
 
-// rootCmd represents the base command when called without any subcommands
+// verbose is a persistent flag that can be used by all CLI commands.
+var verbose bool
+
 var rootCmd = &cobra.Command{
 	Use:     "ergomcutool",
 	Short:   appShortDescription,
@@ -33,25 +35,11 @@ func init() {
 
 	// Hide the 'completion' command
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVarP(&gconf.P.ConfigURI, "config", "", "./config.yaml", "config file")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Add persistent flags
+	rootCmd.PersistentFlags().BoolVarP(
+		&verbose, "verbose", "", false, "Verbose mode")
 }
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
-
-	// xzdummy.SayHello() // Test package replacement with local version
-
-	// Validate preliminary config.
-	// fmt.Printf("* config file in preliminary configuration: %q\n", gconf.P.ConfigURI)
-	// fmt.Println("This is initConfig!")
-
+	// nothing to do yet
 }

@@ -24,14 +24,11 @@ var updateProjectCmd = &cobra.Command{
 }
 
 var (
-	up_Verbose  bool
 	up_Makefile string
 )
 
 func init() {
 	rootCmd.AddCommand(updateProjectCmd)
-	updateProjectCmd.PersistentFlags().BoolVarP(
-		&up_Verbose, "verbose", "", false, "Verbose mode")
 	updateProjectCmd.PersistentFlags().StringVarP(
 		&up_Makefile, "makefile", "m", "", "Specify custom path to Makefile")
 }
@@ -51,7 +48,7 @@ func updateProject(cmd *cobra.Command, args []string) {
 	}
 
 	log.Printf("Updating project %q...\n", *pc.ProjectName)
-	if up_Verbose {
+	if verbose {
 		fmt.Println("* Using the following project configuration:")
 		fmt.Println(pc.String())
 	}
@@ -121,7 +118,7 @@ Generate the Makefile first using STM32CubeMX.
 		moveMakefileToPreEdited = true
 	}
 
-	if up_Verbose {
+	if verbose {
 		log.Printf("* original makefile contains %d lines.\n", len(makefile.Lines))
 	}
 
@@ -273,7 +270,7 @@ Check your project configuration.`, err)
 		}
 	}
 
-	if up_Verbose {
+	if verbose {
 		log.Printf("* updated makefile contains %d lines.\n", len(makefile.Lines))
 	}
 
