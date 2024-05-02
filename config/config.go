@@ -40,6 +40,11 @@ var (
 
 	// Number of makefile backup files
 	MakefileBackupsLimit = 3
+
+	LocalErgomcuDir = "ergomcutool"
+	// ProjectFilePath is the path to the project file from project root.
+	ProjectFilePath   = filepath.Join(LocalErgomcuDir, "ergomcu_project.yaml")
+	ProjectScriptsDir = filepath.Join(LocalErgomcuDir, "scripts")
 )
 
 // user and local tool configuration file names
@@ -52,6 +57,9 @@ var UserConfigDir = func() string {
 
 type ToolConfig_GeneralT struct {
 	ArmToolchainPath *string `yaml:"arm_toolchain_path"`
+	CCompilerPath    *string `yaml:"c_compiler_path"`
+	CppCompilerPath  *string `yaml:"cpp_compiler_path"`
+	DebuggerPath     *string `yaml:"debugger_path"`
 }
 
 func (g *ToolConfig_GeneralT) Validate() error {
@@ -63,6 +71,15 @@ func (g *ToolConfig_GeneralT) Validate() error {
 		log.Printf("%s general:'arm_toolchain_path' must specify an existing directory.%s",
 			toolConfigWarningPrefix, toolConfigWarningSuffix)
 	}
+	if g.CCompilerPath == nil {
+		return fmt.Errorf("'c_compiler_path' parameter is not defined")
+	}
+	if g.CppCompilerPath == nil {
+		return fmt.Errorf("'cpp_compiler_path' parameter is not defined")
+	}
+	if g.DebuggerPath == nil {
+		return fmt.Errorf("'debugger_path' parameter is not defined")
+	}
 	return nil
 }
 
@@ -70,6 +87,7 @@ type ToolConfig_OpenOcdT struct {
 	Interface   *string `yaml:"interface"`
 	BinPath     *string `yaml:"bin_path"`
 	ScriptsPath *string `yaml:"scripts_path"`
+	SvdFilePath *string `yaml:"svd_file_path"`
 }
 
 func (g *ToolConfig_OpenOcdT) Validate() error {
@@ -97,6 +115,9 @@ func (g *ToolConfig_OpenOcdT) Validate() error {
 	if !exists {
 		log.Printf("%s openocd:'scripts_path' must specify an existing directory.%s\n",
 			toolConfigWarningPrefix, toolConfigWarningSuffix)
+	}
+	if g.SvdFilePath == nil {
+		return fmt.Errorf("'svd_file_path' parameter is not defined")
 	}
 	return nil
 }
@@ -288,26 +309,6 @@ func ParseErgomcutoolConfig(createLocalConfigIfNotExists bool) {
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			log.Fatalf("error: ergomcutool configuration file doesn't exist, please run 'ergomcutool init' first.\n")
-
-			// os.Exit(0)
-			/*
-
-							// Copy assets from the embedded FS
-							copyAssetsIntoUserConfigDir()
-							// Re-read file
-							if err = readConfigFile(userConfigFilePath, ToolConfig); err != nil {
-								log.Fatalf("failed to read user configuration file: %+v\n", err)
-							}
-							// Print message about first run and exit
-							firstRunMsg := fmt.Sprintf(`IMPORTANT!
-				You've just run ergomcutool for the first time on your machine.
-				Your command hasn't been executed,
-				but new user settings have been generated.
-				In case you want to review them,
-				check %q.
-				Now you may proceed and re-run your command.`, userConfigFilePath)
-							log.Println(firstRunMsg)
-			*/
 		} else {
 			log.Fatalf("error: failed to read user configuration file: %+v\n", err)
 		}
@@ -328,7 +329,7 @@ func ParseErgomcutoolConfig(createLocalConfigIfNotExists bool) {
 				}
 				if err = copyTextFileEx(
 					userConfigFilePath,
-					localConfigFilePath, "# ",
+					localConfigFilePath, "", // "# "
 					DefaultFilePermissions); err != nil {
 					log.Fatalf("Failed to write local configuration to file %q: %v\n",
 						localConfigFilePath, err)

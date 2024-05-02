@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "STM32_Debug",
+      "type": "cortex-debug",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "servertype": "openocd",
+      "preLaunchTask": "Build"
+    }
+  ]
+}

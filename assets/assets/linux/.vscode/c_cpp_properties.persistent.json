@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "name": "linux-gcc-arm",
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "intelliSenseMode": "linux-gcc-arm",
+      "compilerArgs": [
+        ""
+      ]
+    }
+  ],
+  "version": 4
+}

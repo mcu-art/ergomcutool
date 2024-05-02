@@ -1,11 +1,17 @@
-# This is a ergomcutool configuration file.
+# This is ergomcutool v1.0.0 configuration file.
 # It contains machine-specific settings
-# that normally shouldn't be committed, e.g. local library paths,
+# that are not committed, e.g. local paths,
 # your hardware description etc.
 
 general:
   # Path to your ARM C compiler (usually arm-none-eabi-gcc) directory
   arm_toolchain_path: /usr/bin
+  # Full path to your ARM C compiler
+  c_compiler_path: /usr/bin/arm-none-eabi-gcc
+  # Full path to your ARM C++ compiler
+  cpp_compiler_path: /usr/bin/arm-none-eabi-g++
+  # Full path to your ARM debugger
+  debugger_path: /usr/bin/gdb-multiarch
 
 openocd:
   # Define the hardware you use to write data and debug the MCU.
@@ -16,7 +22,11 @@ openocd:
   bin_path:  /usr/bin/openocd
   # Path to the openocd scripts directory
   scripts_path: /usr/share/openocd/scripts
-
+  # Path to the .svd file for your specific MCU device.
+  # This setting should be specified locally.
+  # STM32 debugging can be done without .svd file,
+  # but convenient register names, control bit names etc. will be missing.
+  svd_file_path: ""
 
 # External dependencies are libraries
 # or directories with source files that you may use in your projects.

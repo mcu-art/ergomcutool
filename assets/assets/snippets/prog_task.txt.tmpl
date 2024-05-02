@@ -1,2 +1,2 @@
 prog: $(BUILD_DIR)/$(TARGET).elf
-	openocd -f interface/{{.OpenocdInterface}} -f target/{{.OpenocdTarget}} -c "program build/$(TARGET).elf verify exit reset"
+	openocd -f interface/{{.OpenocdInterface}} -f target/{{.OpenocdTarget}} -c "program $(BUILD_DIR)/$(TARGET).elf verify exit reset"

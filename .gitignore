@@ -9,9 +9,9 @@
 *.so
 *.dylib
 # Executables
-main
-ergomcutool
-ergomcutool.exe
+/main
+/ergomcutool
+/ergomcutool.exe
 
 # Test binary, built with `go test -c`
 *.test

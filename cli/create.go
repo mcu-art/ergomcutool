@@ -104,10 +104,8 @@ File %q will be used to collect the required data.
 	// if necessary.
 
 	// Return if project file already exists
-	projectFileName := "ergomcu_project.yaml"
-	projectFilePath := filepath.Join(cwd, projectFileName)
-	if exists := utils.FileExists(projectFilePath); exists {
-		log.Fatalf("error: project file %q already exists.\nProject creation skipped.\n", projectFilePath)
+	if exists := utils.FileExists(config.ProjectFilePath); exists {
+		log.Fatalf("error: project file %q already exists.\nProject creation skipped.\n", config.ProjectFilePath)
 	}
 
 	// Copy asset files
@@ -130,17 +128,16 @@ File %q will be used to collect the required data.
 	// Instantiate templates
 
 	// ergomcu_project.yaml template
-	dest := filepath.Join(cwd, "ergomcu_project.yaml")
-
 	err = tpl.InstantiateAssetTemplate("ergomcu_project.yaml.tmpl",
-		dest, projectTemplateReplacements, config.DefaultFilePermissions,
+		config.ProjectFilePath, projectTemplateReplacements, config.DefaultFilePermissions,
 	)
 	if err != nil {
-		log.Fatalf("error: failed to instantiate file %q: %v.\n", dest, err)
+		log.Fatalf("error: failed to instantiate file %q: %v.\n",
+			config.ProjectFilePath, err)
 	}
 
 	// README.md template
-	dest = filepath.Join(cwd, "README.md")
+	dest := filepath.Join(cwd, "README.md")
 	err = tpl.InstantiateAssetTemplate("README.md.tmpl",
 		dest, projectTemplateReplacements, config.DefaultFilePermissions,
 	)
@@ -157,15 +154,14 @@ File %q will be used to collect the required data.
 				nonPersistentDirPath, err)
 		}
 	}
-	// Grant execute permissions for "_ergomcutool/scripts/*"
-	localScriptDir := filepath.Join("_ergomcutool", "scripts")
-	scriptFiles, err := utils.GetFileList(localScriptDir)
+	// Grant execute permissions to the project scripts
+	scriptFiles, err := utils.GetFileList(config.ProjectScriptsDir)
 	if err != nil {
 		log.Printf("warning: failed to list files in directory %q: %v.\n",
-			localScriptDir, err)
+			config.ProjectScriptsDir, err)
 	}
 	for _, file := range scriptFiles {
-		filePath := filepath.Join(localScriptDir, file)
+		filePath := filepath.Join(config.ProjectScriptsDir, file)
 		err := os.Chmod(filePath, fs.FileMode(config.DefaultScriptPermissions))
 		if err != nil {
 			log.Printf("warning: failed to grant 'execute' permissions to %q: %v.\n",
@@ -182,7 +178,7 @@ File %q will be used to collect the required data.
 		log.Printf("warning: 'ProjectManager.UAScriptBeforePath' value already exists, patch skipped.\n")
 	} else {
 		_, _ = ioc.ReplaceValue("ProjectManager.UAScriptBeforePath",
-			filepath.Join(localScriptDir, "cubemx-before-generate.sh"))
+			filepath.Join(config.ProjectScriptsDir, "cubemx-before-generate.sh"))
 	}
 
 	oldAfterGenerateAction, err := ioc.ReadValue("ProjectManager.UAScriptAfterPath")
@@ -193,7 +189,7 @@ File %q will be used to collect the required data.
 		log.Printf("warning: 'ProjectManager.UAScriptAfterPath' value already exists, patch skipped.\n")
 	} else {
 		_, _ = ioc.ReplaceValue("ProjectManager.UAScriptAfterPath",
-			filepath.Join(localScriptDir, "cubemx-after-generate.sh"))
+			filepath.Join(config.ProjectScriptsDir, "cubemx-after-generate.sh"))
 	}
 
 	// Update the .ioc file
@@ -207,6 +203,13 @@ File %q will be used to collect the required data.
 		if err != nil {
 			log.Printf("warning: failed to update file %q: %v.\n", iocFile, err)
 		}
+	}
+
+	// Copy .vscode files
+	src = filepath.Join(config.UserConfigDir, "assets", "linux", ".vscode")
+	err = utils.CopyDir(src, ".vscode", config.DefaultDirPermissions, config.DefaultFilePermissions)
+	if err != nil {
+		log.Printf("warning: failed to copy .vscode directory from %q: %v.\n", src, err)
 	}
 
 	log.Printf("The project was created successfully.")

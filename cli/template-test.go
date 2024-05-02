@@ -3,7 +3,10 @@ package cli
 
 import (
 	"log"
+	"path/filepath"
 
+	"github.com/mcu-art/ergomcutool/config"
+	"github.com/mcu-art/ergomcutool/intellisense"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +28,25 @@ func OnTemplateTestCmd(cmd *cobra.Command, args []string) {
 	name := cmd.Flag("name").Value.String()
 	if name == "" {
 		log.Fatalf("error: template name must be specified\n")
+	}
 
+	config.EnsureUserConfigExists()
+	config.ParseErgomcutoolConfig(false)
+
+	r := intellisense.CCppPropertiesReplacements{
+		IncludePath: []string{
+			"/dummy/include1",
+			"../dummy/include2",
+		},
+		Defines: []string{
+			"-DDUMMY1",
+			"-DDUMMY2",
+		},
+		CompilerPath: filepath.Join(*config.ToolConfig.General.ArmToolchainPath, "arm-none-eabi-gcc"),
+	}
+	err := intellisense.ProcessCCppPropertiesJson(r)
+	if err != nil {
+		log.Fatalf("error: ProcessCCppPropertiesJson failed: %v\n", err)
 	}
 
 	/*

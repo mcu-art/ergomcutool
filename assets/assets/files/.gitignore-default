@@ -16,8 +16,8 @@ _non_persistent/
 .vscode/**/*
 
 # .vscode exceptions
-!.vscode/*.default.json
-
+!.vscode/*.persistent.json
+!.vscode/tasks.json
 
 # Ignore all local history of files
 **/.history
