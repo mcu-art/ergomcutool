@@ -62,8 +62,8 @@ func readJsonFileToMap(filePath string) (map[string]any, error) {
 }
 
 // findConfigurations takes c_cpp_properties.json as an input
-// and returns a slice of configurations that have names starting with specified prefix
-// along with their index.
+// and returns a slice of configurations that have names
+// starting with specified prefix along with their index.
 func findConfigurations(
 	root map[string]any, prefix string) ([]ConfigurationEntry, error) {
 	r := make([]ConfigurationEntry, 0, 10)
@@ -94,7 +94,8 @@ func findConfigurations(
 
 // ProcessCCppPropertiesJson processes 'c_cpp_properties.json'
 // so that it contains values required for VSCode intellisense.
-// If the file doesn't exist, it will be created based on 'c_cpp_properties.persistent.json'.
+// If the file doesn't exist, it will be created
+// from the 'c_cpp_properties.persistent.json'.
 func ProcessCCppPropertiesJson(r CCppPropertiesReplacements) error {
 	var err error
 	// Read c_cpp_properties.json if exists
@@ -175,7 +176,8 @@ func ProcessCCppPropertiesJson(r CCppPropertiesReplacements) error {
 
 // ProcessLaunchJson processes 'launch.json'
 // so that it contains values required for VSCode intellisense.
-// If the file doesn't exist, it will be created based on 'launch.persistent.json'.
+// If the file doesn't exist, it will be created
+// from 'launch.persistent.json'.
 func ProcessLaunchJson(r LaunchReplacements) error {
 	var err error
 	// Read c_cpp_properties.json if exists
@@ -256,7 +258,8 @@ func ProcessLaunchJson(r LaunchReplacements) error {
 
 // ProcessSettingsJson processes 'settings.json'
 // so that it contains values required for VSCode intellisense.
-// If the file doesn't exist, it will be created based on 'settings.persistent.json'.
+// If the file doesn't exist, it will be created
+// from 'settings.persistent.json'.
 func ProcessSettingsJson(r SettingsReplacements) error {
 	var err error
 	// Read c_cpp_properties.json if exists
@@ -314,7 +317,8 @@ func ProcessSettingsJson(r SettingsReplacements) error {
 
 // ProcessTasksJson processes 'tasks.json'
 // so that it contains values required for VSCode intellisense.
-// If the file doesn't exist, it will be created based on 'tasks.persistent.json'.
+// If the file doesn't exist, it will be created
+// from 'tasks.persistent.json'.
 func ProcessTasksJson() error {
 	var err error
 	// Read c_cpp_properties.json if exists
@@ -331,7 +335,6 @@ func ProcessTasksJson() error {
 		}
 	}
 
-	// That's it, no additional processing required for tasks.json
-
+	// No additional processing required for tasks.json
 	return nil
 }

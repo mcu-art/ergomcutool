@@ -9,24 +9,29 @@ _external/
 _non_persistent/
 
 
-
 # VSCode
-# All files within .vscode folder are automatically generated
-# according to local settings and thus are not committed.
+# All files within .vscode folder
 .vscode/**/*
 
-# .vscode exceptions
+# .VSCode exceptions
 !.vscode/*.persistent.json
-!.vscode/tasks.json
 
 # Ignore all local history of files
 **/.history
 
 # CubeMX
 .mxproject
-Makefile
+
+# Keil files and directories
 MDK-ARM/
 
+# Makefile
+Makefile
+
+#CMake files and directories
+cmake/
+CMakeLists.txt
+CMakePresets.json
 
 # Prerequisites
 *.d

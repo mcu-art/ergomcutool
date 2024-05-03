@@ -19,8 +19,6 @@ var (
 	cubemxBeforeGen_Makefile string
 )
 
-// var cubemxBeforeGenerateCmdForce bool
-
 func init() {
 	rootCmd.AddCommand(cubemxBeforeGenerateCmd)
 	cubemxBeforeGenerateCmd.PersistentFlags().StringVarP(

@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -49,11 +48,11 @@ func updateProject(cmd *cobra.Command, args []string) {
 
 	log.Printf("Updating project %q...\n", *pc.ProjectName)
 	if verbose {
-		fmt.Println("* Using the following project configuration:")
-		fmt.Println(pc.String())
+		log.Println("* Using the following project configuration:")
+		log.Println(pc.String())
 	}
 
-	// Check if makefile exists.
+	// Check if makefile exists
 	if up_Makefile == "" {
 		up_Makefile = filepath.Join(cwd, "Makefile")
 	}
@@ -114,7 +113,7 @@ Generate the Makefile first using STM32CubeMX.
 			log.Fatalf("error: failed to read and parse %q: %v\n",
 				preEditedMakefilePath, err)
 		}
-	} else { // Makefile is not edited, move it later to _non_persistent/Makefile.pre-edit
+	} else { // Makefile wasn't edited, move it later to _non_persistent/Makefile.pre-edit
 		moveMakefileToPreEdited = true
 	}
 
@@ -212,7 +211,7 @@ Check your project configuration.`, err)
 
 	// Instantiate and append the 'prog' target
 	progSnippetUserDir := filepath.Join(config.UserConfigDir, "assets", "snippets")
-	progSnippetLocalDir := filepath.Join(cwd, config.LocalErgomcuDir, "assets", "snippets")
+	progSnippetLocalDir := filepath.Join(cwd, config.LocalErgomcuDir, "snippets")
 	progSnippetFileName := "prog_task.txt.tmpl"
 	instantiatedProgSnippet := ""
 	replacements := map[string]string{
@@ -302,26 +301,24 @@ The intellisense may not work properly.`, err)
 
 	var noSvdFileWarningPrefix string
 	if svdFilePath == "" {
-		noSvdFileWarningPrefix = `warning: .svd file for your MCU device
-is not specified in the project configuration.
+		noSvdFileWarningPrefix = `warning: you haven't specified the path to the .svd file for your MCU.
 `
 	} else {
-		noSvdFileWarningPrefix = `warning: file specified by 'svd_file_path'
-in the project configuration doesn't exist.
+		noSvdFileWarningPrefix = `warning: specified .svd file doesn't exist.
 `
 	}
 
 	if !utils.FileExists(svdFilePath) {
-		log.Printf(noSvdFileWarningPrefix + `The debugger will work properly without .svd file,
-but register names and other useful data will be unavailable.
-To remove this warning, specify path to a valid .svd file
-in either '_non_persistent/ergomcutool_config.yaml' or 'ergomcutool/ergomcu_project.yaml'.
+		if !config.ToolConfig.Openocd.DisableSvdWarning {
+			log.Printf(noSvdFileWarningPrefix + `To disable this warning, either specify it
+or set 'disable_svd_warning: true' in '_non_persistent/ergomcutool_config.yaml'.
 `)
+		}
 	}
 	launchReplacements := intellisense.LaunchReplacements{
 		Executable: launchExecutable,
-		ConfigFiles: []string{*config.ToolConfig.Openocd.Interface,
-			*pc.Openocd.Target},
+		ConfigFiles: []string{filepath.Join("interface", *config.ToolConfig.Openocd.Interface),
+			filepath.Join("target", *pc.Openocd.Target)},
 		SvdFile: svdFilePath,
 	}
 	err = intellisense.ProcessLaunchJson(launchReplacements)

@@ -49,7 +49,7 @@ type Mkf struct {
 }
 
 var (
-	AutoEditedMarkComment = `# This file was edited by ergomcutool:`
+	AutoEditedMarkComment = `# This file was edited by ergomcutool`
 	AutoEditedMarkPrefix  = "# ERGOMCUTOOL_VERSION ="
 	ErrValueNotFound      = errors.New("value not found")
 	ErrEntryNotFound      = errors.New("entry not found")
@@ -290,7 +290,6 @@ func (m *Mkf) ReadValue(entryName string) ([]string, error) {
 				return r, nil
 			}
 			// Check if last character is '\'
-			//if value[valueLength-1] == '\\' {
 			if strings.HasSuffix(value, "\\") {
 				value = strings.TrimSpace(value[:valueLength-1])
 				checkNextLine = true
@@ -399,8 +398,8 @@ func BackupMakefile(makefilePath string) error {
 			minFilePrefix = prefixNum
 		}
 	}
-	// Generate file name for new backup
 
+	// Generate file name for new backup
 	t := time.Now()
 	date := t.Format("2006_01_02")
 	fileName := fmt.Sprintf("%d-makefile-%s", maxFilePrefix+1, date)

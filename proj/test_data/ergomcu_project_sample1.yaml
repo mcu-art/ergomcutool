@@ -17,6 +17,7 @@ openocd:
   # the openocd scripts/target directory.
   target:  dummy_openocd_target
   svd_file_path: "../svd/dummy.svd"
+  disable_svd_warning: false
 
 # External project dependencies are libraries
 # or directories with source files that you may use in your project.

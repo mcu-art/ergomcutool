@@ -11,7 +11,4 @@ func TestReadAndValidate(t *testing.T) {
 	m, err := ReadAndValidate(sample1Path)
 	require.Nil(t, err)
 	require.NotNil(t, m)
-
-	//fmt.Println(m.String())
-	//require.True(t, false)
 }

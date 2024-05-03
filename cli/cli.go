@@ -41,5 +41,5 @@ func init() {
 }
 
 func initConfig() {
-	// nothing to do yet
+	// nothing to do
 }

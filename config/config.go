@@ -42,6 +42,7 @@ var (
 	MakefileBackupsLimit = 5
 
 	LocalErgomcuDir = "ergomcutool"
+
 	// ProjectFilePath is the path to the project file from project root.
 	ProjectFilePath   = filepath.Join(LocalErgomcuDir, "ergomcu_project.yaml")
 	ProjectScriptsDir = filepath.Join(LocalErgomcuDir, "scripts")
@@ -82,10 +83,11 @@ func (g *ToolConfig_GeneralT) Validate() error {
 }
 
 type ToolConfig_OpenOcdT struct {
-	Interface   *string `yaml:"interface"`
-	BinPath     *string `yaml:"bin_path"`
-	ScriptsPath *string `yaml:"scripts_path"`
-	SvdFilePath string  `yaml:"svd_file_path"`
+	Interface         *string `yaml:"interface"`
+	BinPath           *string `yaml:"bin_path"`
+	ScriptsPath       *string `yaml:"scripts_path"`
+	SvdFilePath       string  `yaml:"svd_file_path"`
+	DisableSvdWarning bool    `yaml:"disable_svd_warning"`
 }
 
 func (g *ToolConfig_OpenOcdT) Validate() error {
@@ -134,7 +136,8 @@ type ExternalDependencyT struct {
 // Precedence has: 'configSetting.Path',
 // 'projectSetting.LinkName' is only modified if
 // 'configSetting.LinkName' is not empty.
-func (projectSetting *ExternalDependencyT) MergeSpecial(configSetting *ExternalDependencyT) {
+func (projectSetting *ExternalDependencyT) MergeSpecial(
+	configSetting *ExternalDependencyT) {
 	if projectSetting.Var != configSetting.Var {
 		return
 	}
@@ -373,14 +376,6 @@ func ParseErgomcutoolConfig(createLocalConfigIfNotExists bool) {
 		}
 	}
 
-	// Do not validate external dependencies here, they are validated
-	// only on update-project cmd
-
-	// for _, d := range ToolConfig.ExternalDependencies {
-	// 	if err = d.Validate(); err != nil {
-	// 		log.Fatalf("%s %v.\n%s\n",
-	// 			msgPrefix, err, msgSuffix)
-	// 	}
-	// }
-
+	// Do not validate external dependencies here,
+	// they should be validated in the update-project cmd
 }

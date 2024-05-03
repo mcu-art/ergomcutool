@@ -18,9 +18,9 @@ openocd:
   target:  {{ .OpenocdTarget }}
 
   # Path to the .svd file for your specific MCU device.
-  # If the .svd file is not a part of your project
-  # or the path is machine-dependent and shouldn't be committed,
-  # you may specify it in _non_persistent/ergomcutool_config.yaml
+  # If the .svd file is not included as a part of your project
+  # or the path is machine-dependent,
+  # you should specify it in '_non_persistent/ergomcutool_config.yaml' instead.
   svd_file_path:
 
 # External project dependencies are libraries
@@ -45,7 +45,8 @@ c_src:
 # All .c files in that directory will be added to your project
 # in alphabetical order.
 c_src_dirs:
-#  - tests
+#  - src_dir_1
+#  - ../src_dir_2
 
 # C include directories
 c_include_dirs:
