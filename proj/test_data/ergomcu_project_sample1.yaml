@@ -16,6 +16,7 @@ openocd:
   # openocd target should match one of the file names in
   # the openocd scripts/target directory.
   target:  dummy_openocd_target
+  svd_file_path: "../svd/dummy.svd"
 
 # External project dependencies are libraries
 # or directories with source files that you may use in your project.

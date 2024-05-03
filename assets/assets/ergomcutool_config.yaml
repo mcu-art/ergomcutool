@@ -23,10 +23,11 @@ openocd:
   # Path to the openocd scripts directory
   scripts_path: /usr/share/openocd/scripts
   # Path to the .svd file for your specific MCU device.
-  # This setting should be specified locally.
+  # If the .svd file is a part of your project,
+  # you should specify it in ergomcutool/ergomcu_project.yaml
   # STM32 debugging can be done without .svd file,
   # but convenient register names, control bit names etc. will be missing.
-  svd_file_path: ""
+  svd_file_path:
 
 # External dependencies are libraries
 # or directories with source files that you may use in your projects.

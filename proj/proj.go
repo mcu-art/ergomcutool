@@ -36,8 +36,9 @@ func (p *ErgomcuProjectT) String() string {
 }
 
 type OpenocdDescriptor struct {
-	Disabled bool    `yaml:"disabled"`
-	Target   *string `yaml:"target"`
+	Disabled    bool    `yaml:"disabled"`
+	Target      *string `yaml:"target"`
+	SvdFilePath string  `yaml:"svd_file_path"`
 }
 
 func (g *OpenocdDescriptor) Validate() error {

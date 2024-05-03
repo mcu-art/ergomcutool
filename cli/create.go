@@ -175,7 +175,7 @@ File %q will be used to collect the required data.
 		log.Printf("warning: failed to read 'ProjectManager.UAScriptBeforePath' from .ioc file: %v.\n", err)
 	}
 	if oldBeforeGenerateAction != "" {
-		log.Printf("warning: 'ProjectManager.UAScriptBeforePath' value already exists, patch skipped.\n")
+		log.Printf("warning: 'ProjectManager.UAScriptBeforePath' value already exists, original value left intact.\n")
 	} else {
 		_, _ = ioc.ReplaceValue("ProjectManager.UAScriptBeforePath",
 			filepath.Join(config.ProjectScriptsDir, "cubemx-before-generate.sh"))
@@ -186,7 +186,7 @@ File %q will be used to collect the required data.
 		log.Printf("warning: failed to read 'ProjectManager.UAScriptAfterPath' from .ioc file: %v.\n", err)
 	}
 	if oldAfterGenerateAction != "" {
-		log.Printf("warning: 'ProjectManager.UAScriptAfterPath' value already exists, patch skipped.\n")
+		log.Printf("warning: 'ProjectManager.UAScriptAfterPath' value already exists, original value left intact.\n")
 	} else {
 		_, _ = ioc.ReplaceValue("ProjectManager.UAScriptAfterPath",
 			filepath.Join(config.ProjectScriptsDir, "cubemx-after-generate.sh"))
@@ -212,8 +212,10 @@ File %q will be used to collect the required data.
 		log.Printf("warning: failed to copy .vscode directory from %q: %v.\n", src, err)
 	}
 
-	log.Printf("The project was created successfully.")
-
+	log.Printf(`The project was successfully created.
+You may now edit 'ergomcutool/ergomcu_project.yaml' and
+'_non_persistent/ergomcutool_config.yaml' to modify the project settings.
+	`)
 }
 
 // findOpenocdTargetFile tries to identify openocd target file by matching DeviceId

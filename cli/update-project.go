@@ -295,11 +295,34 @@ The intellisense may not work properly.`, err)
 	// launch.json
 	buildDir, _ := makefile.ReadValue("BUILD_DIR")
 	launchExecutable := filepath.Join(buildDir[0], *pc.ProjectName+".elf")
+	svdFilePath := config.ToolConfig.Openocd.SvdFilePath
+	if svdFilePath == "" {
+		svdFilePath = pc.Openocd.SvdFilePath
+	}
+
+	var noSvdFileWarningPrefix string
+	if svdFilePath == "" {
+		noSvdFileWarningPrefix = `warning: .svd file for your MCU device
+is not specified in the project configuration.
+`
+	} else {
+		noSvdFileWarningPrefix = `warning: file specified by 'svd_file_path'
+in the project configuration doesn't exist.
+`
+	}
+
+	if !utils.FileExists(svdFilePath) {
+		log.Printf(noSvdFileWarningPrefix + `The debugger will work properly without .svd file,
+but register names and other useful data will be unavailable.
+To remove this warning, specify path to a valid .svd file
+in either '_non_persistent/ergomcutool_config.yaml' or 'ergomcutool/ergomcu_project.yaml'.
+`)
+	}
 	launchReplacements := intellisense.LaunchReplacements{
 		Executable: launchExecutable,
 		ConfigFiles: []string{*config.ToolConfig.Openocd.Interface,
 			*pc.Openocd.Target},
-		SvdFile: *config.ToolConfig.Openocd.SvdFilePath,
+		SvdFile: svdFilePath,
 	}
 	err = intellisense.ProcessLaunchJson(launchReplacements)
 	if err != nil {

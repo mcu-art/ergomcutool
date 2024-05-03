@@ -39,7 +39,7 @@ var (
 	UserConfigFilePath = filepath.Join(UserConfigDir, UserConfigFileName)
 
 	// Number of makefile backup files
-	MakefileBackupsLimit = 3
+	MakefileBackupsLimit = 5
 
 	LocalErgomcuDir = "ergomcutool"
 	// ProjectFilePath is the path to the project file from project root.
@@ -52,8 +52,6 @@ var UserConfigDir = func() string {
 	homeDir, _ := os.UserHomeDir()
 	return filepath.Join(homeDir, ".ergomcutool")
 }()
-
-// var UserLocalConfigFilePath = filepath.Join("_non_persistent", "ergomcutool_config.yaml")
 
 type ToolConfig_GeneralT struct {
 	ArmToolchainPath *string `yaml:"arm_toolchain_path"`
@@ -87,7 +85,7 @@ type ToolConfig_OpenOcdT struct {
 	Interface   *string `yaml:"interface"`
 	BinPath     *string `yaml:"bin_path"`
 	ScriptsPath *string `yaml:"scripts_path"`
-	SvdFilePath *string `yaml:"svd_file_path"`
+	SvdFilePath string  `yaml:"svd_file_path"`
 }
 
 func (g *ToolConfig_OpenOcdT) Validate() error {
@@ -116,9 +114,7 @@ func (g *ToolConfig_OpenOcdT) Validate() error {
 		log.Printf("%s openocd:'scripts_path' must specify an existing directory.%s\n",
 			toolConfigWarningPrefix, toolConfigWarningSuffix)
 	}
-	if g.SvdFilePath == nil {
-		return fmt.Errorf("'svd_file_path' parameter is not defined")
-	}
+
 	return nil
 }
 

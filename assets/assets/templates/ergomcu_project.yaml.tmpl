@@ -17,6 +17,12 @@ openocd:
   # the openocd scripts/target directory.
   target:  {{ .OpenocdTarget }}
 
+  # Path to the .svd file for your specific MCU device.
+  # If the .svd file is not a part of your project
+  # or the path is machine-dependent and shouldn't be committed,
+  # you may specify it in _non_persistent/ergomcutool_config.yaml
+  svd_file_path:
+
 # External project dependencies are libraries
 # or directories with source files that you may use in your project.
 # Note that it is recommended to only specify here machine-independent paths
