@@ -55,8 +55,18 @@ try installing it from a .deb file manually, e.g.
 
 
 ## Installation
+You need Go runtime to install `ergomcutool`.
+The easiest way to install Go on Ubuntu is to use `update-golang` script
+from https://github.com/udhos/update-golang:
 ```bash
-go install github.com/mcu-art/ergomcutool@latest
+git clone https://github.com/udhos/update-golang
+cd update-golang
+sudo ./update-golang.sh
+```
+
+After Go is installed, install `ergomcutool`:
+```bash
+go install github.com/mcu-art/ergomcutool@v1.0.0
 
 # Initialize ergomcutool
 ergomcutool init
