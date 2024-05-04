@@ -336,10 +336,13 @@ The intellisense may not work properly.`, err)
 
 	// settings.json
 	settingsReplacements := intellisense.SettingsReplacements{
-		IncludePaths:    includePathsPlusSrcDirs,
-		CCompilerPath:   *config.ToolConfig.General.CCompilerPath,
-		CppCompilerPath: *config.ToolConfig.General.CppCompilerPath,
-		DebuggerPath:    *config.ToolConfig.General.DebuggerPath,
+		IncludePaths:                includePathsPlusSrcDirs,
+		CCompilerPath:               *config.ToolConfig.General.CCompilerPath,
+		CppCompilerPath:             *config.ToolConfig.General.CppCompilerPath,
+		DebuggerPath:                *config.ToolConfig.General.DebuggerPath,
+		CortexDebugArmToolchainPath: *config.ToolConfig.General.ArmToolchainPath,
+		CortexDebugOpenocdPath:      *config.ToolConfig.Openocd.BinPath,
+		CortexDebugGdbPath:          *config.ToolConfig.General.DebuggerPath,
 	}
 	err = intellisense.ProcessSettingsJson(settingsReplacements)
 	if err != nil {

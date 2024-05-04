@@ -31,10 +31,13 @@ type LaunchReplacements struct {
 // SettingsReplacements are JSON entries for 'settings.json'
 // that are generated automatically based on the project configuration.
 type SettingsReplacements struct {
-	IncludePaths    []string `json:"C_Cpp_Runner.includePaths"`
-	CCompilerPath   string   `json:"C_Cpp_Runner.cCompilerPath"`
-	CppCompilerPath string   `json:"C_Cpp_Runner.cppCompilerPath"`
-	DebuggerPath    string   `json:"C_Cpp_Runner.debuggerPath"`
+	IncludePaths                []string `json:"C_Cpp_Runner.includePaths"`
+	CCompilerPath               string   `json:"C_Cpp_Runner.cCompilerPath"`
+	CppCompilerPath             string   `json:"C_Cpp_Runner.cppCompilerPath"`
+	DebuggerPath                string   `json:"C_Cpp_Runner.debuggerPath"`
+	CortexDebugArmToolchainPath string   `json:"cortex-debug.armToolchainPath"`
+	CortexDebugOpenocdPath      string   `json:"cortex-debug.openocdPath"`
+	CortexDebugGdbPath          string   `json:"cortex-debug.gdbPath"`
 }
 
 // ConfigurationEntry is an auxiliary type that stores
@@ -305,6 +308,9 @@ func ProcessSettingsJson(r SettingsReplacements) error {
 	dest["C_Cpp_Runner.cppCompilerPath"] = r.CppCompilerPath
 	dest["C_Cpp_Runner.debuggerPath"] = r.DebuggerPath
 	dest["C_Cpp_Runner.includePaths"] = r.IncludePaths
+	dest["cortex-debug.armToolchainPath"] = r.CortexDebugArmToolchainPath
+	dest["cortex-debug.openocdPath"] = r.CortexDebugOpenocdPath
+	dest["cortex-debug.gdbPath"] = r.CortexDebugGdbPath
 
 	data, err := json.MarshalIndent(currentFileMap, "", "  ")
 	if err != nil {
