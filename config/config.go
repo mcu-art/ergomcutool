@@ -16,7 +16,7 @@ import (
 
 var (
 	// ergomcutool version
-	Version = "1.0.0"
+	Version = "1.1.0"
 
 	// Owner, group: r+w, others: read only
 	DefaultFilePermissions uint32 = 0664
@@ -83,11 +83,10 @@ func (g *ToolConfig_GeneralT) Validate() error {
 }
 
 type ToolConfig_OpenOcdT struct {
-	Interface         *string `yaml:"interface"`
-	BinPath           *string `yaml:"bin_path"`
-	ScriptsPath       *string `yaml:"scripts_path"`
-	SvdFilePath       string  `yaml:"svd_file_path"`
-	DisableSvdWarning bool    `yaml:"disable_svd_warning"`
+	Interface   *string `yaml:"interface"`
+	BinPath     *string `yaml:"bin_path"`
+	ScriptsPath *string `yaml:"scripts_path"`
+	SvdFilePath string  `yaml:"svd_file_path"`
 }
 
 func (g *ToolConfig_OpenOcdT) Validate() error {
@@ -200,11 +199,21 @@ func (o *BuildOptionsT) Validate() error {
 	return nil
 }
 
+type IntellisenseT struct {
+	IgnoreExternalMakefileOptions bool `yaml:"ignore_external_makefile_sources"`
+}
+
+// Validate validates the IntellisenseT options.
+func (o *IntellisenseT) Validate() error {
+	return nil
+}
+
 type ToolConfigT struct {
 	General              *ToolConfig_GeneralT  `yaml:"general"`
 	Openocd              *ToolConfig_OpenOcdT  `yaml:"openocd"`
 	ExternalDependencies []ExternalDependencyT `yaml:"external_dependencies"`
 	BuildOptions         *BuildOptionsT        `yaml:"build_options"`
+	Intellisense         IntellisenseT         `yaml:"intellisense"`
 }
 
 func (g *ToolConfigT) String() string {
@@ -378,4 +387,10 @@ func ParseErgomcutoolConfig(createLocalConfigIfNotExists bool) {
 
 	// Do not validate external dependencies here,
 	// they should be validated in the update-project cmd
+
+	// Validate intellisense
+	err = ToolConfig.Intellisense.Validate()
+	if err != nil {
+		log.Fatalf("%s 'intellisense' validation failed: %v.\n%s\n", msgPrefix, err, msgSuffix)
+	}
 }

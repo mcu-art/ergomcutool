@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -279,9 +280,24 @@ Check your project configuration.`, err)
 	}
 
 	// Update intellisense
+	var includePathsPlusSrcDirs []string
+
+	if config.ToolConfig.Intellisense.IgnoreExternalMakefileOptions {
+		includePathsPlusSrcDirs = c_includes
+	} else {
+		includePathsPlusSrcDirs = make([]string, 0, len(c_includes)*2)
+		externalSrcDirs, err := getExternalSrcDirs(c_src)
+		if err != nil {
+			log.Printf(`warning: failed to get the list of external source directories of the project: %v.
+The intellisense may not work properly.`, err)
+		}
+		includePathsPlusSrcDirs = append(includePathsPlusSrcDirs, c_includes...)
+		includePathsPlusSrcDirs = append(includePathsPlusSrcDirs, externalSrcDirs...)
+	}
+
 	// c_cpp_properties.json
 	ccppPropertiesReplacements := intellisense.CCppPropertiesReplacements{
-		IncludePath:  c_includes,
+		IncludePath:  includePathsPlusSrcDirs,
 		Defines:      c_defs,
 		CompilerPath: *config.ToolConfig.General.CCompilerPath,
 	}
@@ -299,22 +315,13 @@ The intellisense may not work properly.`, err)
 		svdFilePath = pc.Openocd.SvdFilePath
 	}
 
-	var noSvdFileWarningPrefix string
-	if svdFilePath == "" {
-		noSvdFileWarningPrefix = `warning: you haven't specified the path to the .svd file for your MCU.
-`
-	} else {
-		noSvdFileWarningPrefix = `warning: specified .svd file doesn't exist.
-`
-	}
-
-	if !utils.FileExists(svdFilePath) {
-		if !config.ToolConfig.Openocd.DisableSvdWarning {
-			log.Printf(noSvdFileWarningPrefix + `To disable this warning, either specify it
-or set 'disable_svd_warning: true' in '_non_persistent/ergomcutool_config.yaml'.
-`)
+	if svdFilePath != "" {
+		if !utils.FileExists(svdFilePath) {
+			noSvdFileWarningPrefix := fmt.Sprintf("warning: specified .svd file doesn't exist: %q\n", svdFilePath)
+			log.Print(noSvdFileWarningPrefix)
 		}
 	}
+
 	launchReplacements := intellisense.LaunchReplacements{
 		Executable: launchExecutable,
 		ConfigFiles: []string{filepath.Join("interface", *config.ToolConfig.Openocd.Interface),
@@ -329,7 +336,7 @@ The intellisense may not work properly.`, err)
 
 	// settings.json
 	settingsReplacements := intellisense.SettingsReplacements{
-		IncludePaths:    c_includes,
+		IncludePaths:    includePathsPlusSrcDirs,
 		CCompilerPath:   *config.ToolConfig.General.CCompilerPath,
 		CppCompilerPath: *config.ToolConfig.General.CppCompilerPath,
 		DebuggerPath:    *config.ToolConfig.General.DebuggerPath,
@@ -358,6 +365,24 @@ func expandExternalDependencies(s []string, replacements any) ([]string, error) 
 			return r, err
 		}
 		r = append(r, expanded)
+	}
+	return r, nil
+}
+
+func getExternalSrcDirs(c_src []string) ([]string, error) {
+	r := make([]string, 0, 100)
+	m := make(map[string]bool, 100)
+	for _, file := range c_src {
+		if file == "" {
+			continue
+		}
+		if strings.HasPrefix(file, "/") || strings.HasPrefix(file, "../") {
+			fileDir := filepath.Dir(file)
+			m[fileDir] = true
+		}
+	}
+	for k := range m {
+		r = append(r, k)
 	}
 	return r, nil
 }

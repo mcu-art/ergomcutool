@@ -12,18 +12,19 @@ STM32CubeMX already has an ability to generate Makefiles and CMake files. But th
 that make the workflow more complicated than needed.
 
 Benefits of `ergomcutool`:
-+ less boilerplate to do manually
-+ separation of machine-dependent settings and committable project settings
++ less boilerplate
++ separation of machine-dependent settings and project settings
 + separation of concerns: you manage your files, STM32CubeMX manages its
 + automatic handling of VSCode intellisense
 
 
 ## Prerequisites
 + Linux OS (future versions may support Windows and MacOS).
-  This guide was tested on Ubuntu 22.04.1.
+  `ergomcutool` v1.1.0 was tested on Ubuntu 22.04.1.
 
 + STM32CubeMX
   https://www.st.com/en/development-tools/stm32cubemx.html
+  `ergomcutool` v1.1.0 was tested with STM32CubeMX version 6.11.0
 
 + GNU ARM compiler:
 ```bash
@@ -55,7 +56,7 @@ try installing it from a .deb file manually, e.g.
 
 
 ## Installation
-You need Go runtime to install `ergomcutool`.
+You need Go runtime to be installed on your computer.
 The easiest way to install Go on Ubuntu is to use `update-golang` script
 from https://github.com/udhos/update-golang:
 ```bash
@@ -64,14 +65,14 @@ cd update-golang
 sudo ./update-golang.sh
 ```
 
-After Go is installed, install `ergomcutool`:
+Then install `ergomcutool`:
 ```bash
-go install github.com/mcu-art/ergomcutool@v1.0.0
+go install github.com/mcu-art/ergomcutool@v1.1.0
 
 # Initialize ergomcutool
 ergomcutool init
 ```
-After installation, edit `~/.ergomcutool/ergomcutool_config.yaml`
+Edit `~/.ergomcutool/ergomcutool_config.yaml`
 to specify your hardware debugger and other settings.
 
 
@@ -165,8 +166,7 @@ If you choose to use an `.svd` file, you have two options:
 2. Use an external `.svd` file that is not a part of the project,
    in this case you specify the path to it in `_non_persistent/ergomcutool_config.yaml`.
 
-In case you choose not to use `.svd` file, you may disable the warning
-by setting `disable_svd_warning: true` in the `openocd` section in `_non_persistent/ergomcutool_config.yaml`.
+If you don't use `.svd` file in your project, leave `svd_file_path` setting empty.
 
 
 ### External project dependencies
@@ -201,6 +201,20 @@ if you have to view or edit them. If you don't need this functionality,
 you may specify `create_in_project_link: false`.
 `link_name` specifies the name of the symlink to be created.
 The `_external` directory is added to `.gitignore` by default.
+
+
+### Intellisense
+The VSCode intellisense is managed automatically by `ergomcutool`.
+This is done by analyzing the Makefile in addition to `ergomcu_project.yaml`
+and adding necessary entries to `.vscode/settings.json` and `.vscode/c_cpp_properties.json`.
+All include directories specified in your project are always added to the intellisense.
+All source file directories within your project are also added to the intellisense.
+By default, all external source file directories from the Makefile
+are added to the intellisense. This allows you to easily browse those files
+using `Go to definition` VSCode context help.
+If this behaviour is not required or slows down the computer,
+you can disable it by setting `intellisense.ignore_external_makefile_sources` to `true`
+in `ergomcu_project.yaml`.
 
 
 ### Programming the MCU

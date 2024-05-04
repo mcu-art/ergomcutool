@@ -16,17 +16,6 @@ import (
 
 type OverwriteActionT uint32
 
-/*
-const (
-
-	NOTIFY_NONE OverwriteActionT = iota
-	NOTIFY_INFO
-	NOTIFY_WARN
-	NOTIFY_ERROR
-	NOTIFY_FATAL
-
-)
-*/
 const (
 	OverwriteFatal OverwriteActionT = iota
 	OverwriteError
@@ -78,14 +67,6 @@ func GetSortedFileList(path string, suffix string) ([]string, error) {
 	sort.Strings(r)
 	return r, nil
 }
-
-// func SymlinkExists(path string) bool {
-// 	path, _ = homedir.Expand(path)
-// 	if stat, err := os.Stat(path); err == nil && (!stat.IsDir() && !stat.Mode().IsRegular()) {
-// 		return true
-// 	}
-// 	return false
-// }
 
 // See https://stackoverflow.com/a/58148921/3824328
 func CreateOrReplaceSymlink(symlinkPath, target string) error {
@@ -305,7 +286,6 @@ func GetFileList(path string) ([]string, error) {
 	}
 	result := make([]string, 0, 100)
 	for _, file := range files {
-		//fmt.Println(file.Name(), file.IsDir())
 		if file.Type().IsRegular() {
 			result = append(result, file.Name())
 		}

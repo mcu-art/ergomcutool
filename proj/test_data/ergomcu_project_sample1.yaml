@@ -1,7 +1,7 @@
 # ergomcutool project configuration file
 
 # Version of the ergomcutool that created this configuration file.
-ergomcutool_version: 1.0.0
+ergomcutool_version: 1.1.0
 
 # project_name should be the same as
 # the ProjectManager.ProjectName in the .ioc file.

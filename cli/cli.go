@@ -16,7 +16,9 @@ var rootCmd = &cobra.Command{
 	Use:     "ergomcutool",
 	Short:   appShortDescription,
 	Version: config.Version,
-	Long:    `ergomcutool is a tool for integrating STM32CubeMX projects into VSCode.`,
+	Long: `ergomcutool is a tiny project manager that helps
+to integrate STM32CubeMX projects into VSCode.
+More information at https://github.com/mcu-art/ergomcutool`,
 
 	// Comment the following out if there is no need for the root cmd execution.
 	Run: func(cmd *cobra.Command, args []string) {

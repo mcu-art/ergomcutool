@@ -213,8 +213,7 @@ File %q will be used to collect the required data.
 	}
 
 	log.Printf(`The project was successfully created.
-You may now edit 'ergomcutool/ergomcu_project.yaml' and
-'_non_persistent/ergomcutool_config.yaml' to modify the project settings.
+You may now edit 'ergomcutool/ergomcu_project.yaml' and '_non_persistent/ergomcutool_config.yaml'.
 	`)
 }
 

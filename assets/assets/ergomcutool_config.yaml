@@ -1,9 +1,9 @@
-# This is a configuration file for ergomcutool v1.0.0.
-# It contains machine-specific settings that are not committed
-# e.g. local paths, your hardware description etc.
+# This is a configuration file for ergomcutool v1.1.0.
+# Specify here machine-dependent settings that aren't committed
+# and aren't part of your project.
 
 general:
-  # Path to your ARM C compiler (usually arm-none-eabi-gcc) directory
+  # Path to your ARM C compiler directory
   arm_toolchain_path: /usr/bin
   # Full path to your ARM C compiler
   c_compiler_path: /usr/bin/arm-none-eabi-gcc
@@ -25,9 +25,7 @@ openocd:
   # If the .svd file is included as a part of your project,
   # you should specify it in 'ergomcutool/ergomcu_project.yaml' instead.
   svd_file_path:
-  # If you don't use the .svd file in your project,
-  # you might want to disable the warning.
-  disable_svd_warning: false
+
 
 # External dependencies are libraries
 # or directories with source files that you may use in your projects.
@@ -50,3 +48,7 @@ build_options:
 #  build_dir: build
 #  debug:     1
 #  optimization_flags: -Og
+
+
+intellisense:
+#  ignore_external_makefile_sources: false
