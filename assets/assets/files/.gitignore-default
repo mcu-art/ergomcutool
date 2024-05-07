@@ -4,7 +4,7 @@
 **/tmp/
 
 
-# Directories at project root
+# Ergomcutool non-persistent directories
 _external/
 _non_persistent/
 
