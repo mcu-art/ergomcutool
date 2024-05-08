@@ -90,7 +90,11 @@ Generate the Makefile first using STM32CubeMX.
 				continue
 			}
 			newLink := filepath.Join(externalDir, dep.LinkName)
-			err := utils.CreateOrReplaceSymlink(newLink, dep.Path)
+			// Append one relative level to relative symlinks
+			// e.g. ../a becomes ../../a
+			// This is required because symlinks will be created not
+			// at the project root, but inside '_external' directory.
+			err := utils.CreateOrReplaceSymlink(newLink, dep.Path, 1)
 			if err != nil {
 				log.Fatalf("error: failed to create or replace symlink %q to %q: %v\n",
 					newLink, dep.Path, err)

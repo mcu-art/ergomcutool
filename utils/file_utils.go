@@ -69,7 +69,12 @@ func GetSortedFileList(path string, suffix string) ([]string, error) {
 }
 
 // See https://stackoverflow.com/a/58148921/3824328
-func CreateOrReplaceSymlink(symlinkPath, target string) error {
+func CreateOrReplaceSymlink(symlinkPath, target string, appendRelativeLevels int) error {
+	if strings.HasPrefix(target, "..") {
+		for i := 0; i < appendRelativeLevels; i++ {
+			target = filepath.Join("..", target)
+		}
+	}
 	if _, err := os.Lstat(symlinkPath); err == nil {
 		if err := os.Remove(symlinkPath); err != nil {
 			return fmt.Errorf("failed to unlink: %w", err)

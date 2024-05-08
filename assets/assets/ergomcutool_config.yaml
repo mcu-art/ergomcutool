@@ -29,6 +29,7 @@ openocd:
 
 # External dependencies are libraries
 # or directories with source files that you may use in your projects.
+# Relative paths are calculated from the project root.
 # This setting is the same as in the 'ergomcu_project.yaml' file,
 # but these values have precedence in case of a conflict.
 # Note that it is recommended to only specify here machine-dependent paths
