@@ -224,8 +224,8 @@ c_src:
 The `create_in_project_link` setting instructs `ergomcutool`
 to create a symlink in `your_project_root/_external/` directory
 to the directory specified by the `path` value.
-It is a convenient way to work with external files in VSCode
-if you have an ability to view or edit them from inside your project.
+It is a convenient way to work with external files in VSCode,
+it gives you an ability to view or edit them from inside your project.
 If you don't need this functionality,
 just specify `create_in_project_link: false`.
 `link_name` specifies the name of the symlink to be created.
