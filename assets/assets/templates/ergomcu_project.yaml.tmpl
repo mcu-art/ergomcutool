@@ -23,8 +23,8 @@ openocd:
   # you should specify it in '_non_persistent/ergomcutool_config.yaml' instead.
   svd_file_path:
 
-# External project dependencies are libraries
-# or directories with source files that you may use in your project.
+# External project dependencies are external libraries
+# or directories that you use in your project.
 # Relative paths are calculated from the project root.
 # Note that it is recommended to only specify here machine-independent paths
 # that you are going to commit.
@@ -36,7 +36,7 @@ external_dependencies:
 #    create_in_project_link:  true
 #    link_name:               example_lib
 
-# C source files. You may use external_dependencies 'var' values.
+# C source files
 c_src:
 #  - _external/example_lib/file1.c
 #  - "{{"{{"}}.EXAMPLE_LIB{{"}}"}}/file2.c"
@@ -53,5 +53,6 @@ c_src_dirs:
 c_include_dirs:
 #  - _external/example_lib/include
 
+# C preprocessor definitions
 c_defs:
 # - EXAMPLE_DEFINITION

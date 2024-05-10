@@ -286,17 +286,18 @@ Check your project configuration.`, err)
 	// Update intellisense
 	var includePathsPlusSrcDirs []string
 
-	if config.ToolConfig.Intellisense.IgnoreExternalMakefileOptions {
+	if config.ToolConfig.Intellisense.SkipAddingSourceDirectories {
 		includePathsPlusSrcDirs = c_includes
 	} else {
 		includePathsPlusSrcDirs = make([]string, 0, len(c_includes)*2)
-		externalSrcDirs, err := getExternalSrcDirs(c_src)
+		// c_src is a joined list of all source files for the current project
+		uniqueSrcDirs, err := getSrcDirs(c_src, false)
 		if err != nil {
 			log.Printf(`warning: failed to get the list of external source directories of the project: %v.
 The intellisense may not work properly.`, err)
 		}
 		includePathsPlusSrcDirs = append(includePathsPlusSrcDirs, c_includes...)
-		includePathsPlusSrcDirs = append(includePathsPlusSrcDirs, externalSrcDirs...)
+		includePathsPlusSrcDirs = append(includePathsPlusSrcDirs, uniqueSrcDirs...)
 	}
 
 	// c_cpp_properties.json
@@ -376,14 +377,20 @@ func expandExternalDependencies(s []string, replacements any) ([]string, error) 
 	return r, nil
 }
 
-func getExternalSrcDirs(c_src []string) ([]string, error) {
+// getSrcDirs creates a list of all unique directories that contain source files
+func getSrcDirs(c_src []string, externalOnly bool) ([]string, error) {
 	r := make([]string, 0, 100)
 	m := make(map[string]bool, 100)
 	for _, file := range c_src {
 		if file == "" {
 			continue
 		}
-		if strings.HasPrefix(file, "/") || strings.HasPrefix(file, "../") {
+		if externalOnly {
+			if strings.HasPrefix(file, "/") || strings.HasPrefix(file, "../") {
+				fileDir := filepath.Dir(file)
+				m[fileDir] = true
+			}
+		} else {
 			fileDir := filepath.Dir(file)
 			m[fileDir] = true
 		}

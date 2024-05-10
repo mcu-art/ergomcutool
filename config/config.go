@@ -200,7 +200,9 @@ func (o *BuildOptionsT) Validate() error {
 }
 
 type IntellisenseT struct {
-	IgnoreExternalMakefileOptions bool `yaml:"ignore_external_makefile_sources"`
+	// Skip adding source directories to VSCode intellisense
+	// ("C_Cpp_Runner.includePaths" in .vscode/settings.json)
+	SkipAddingSourceDirectories bool `yaml:"skip_adding_source_directories"`
 }
 
 // Validate validates the IntellisenseT options.

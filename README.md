@@ -201,20 +201,33 @@ external_dependencies:
    link_name:               example_lib
 ```
 
-In this example, an external dependency `EXAMPLE_LIB` is defined,
-it can be used in the file paths with the following syntax:
+In this example, an external dependency `EXAMPLE_LIB` is defined.
+
+There are two ways of adding it into the project paths:
+1. Referencing the `var` value (golang template syntax).
+This way is recommended when `create_in_project_link` is false.
+Note the quotes that are required for yaml syntax to be valid:
 ```yaml
 c_src:
   - "{{.EXAMPLE_LIB}}/src/file1.c"
 ```
-Note the quotes that are required in this case for yaml syntax to be valid.
+2. Referencing the `link_name` value.
+This way is recommended when `create_in_project_link` is true.
+It allows you to easily obtain the correct path in VSCode by right-clicking
+on the chosen file in VSCode Explorer and selecting `Copy Relative Path`
+from the context menu.
+```yaml
+c_src:
+  - _external/example_lib/src/file1.c
+```
+
 The `create_in_project_link` setting instructs `ergomcutool`
 to create a symlink in `your_project_root/_external/` directory
-to the directory specified by `path`.
+to the directory specified by the `path` value.
 It is a convenient way to work with external files in VSCode
 if you have an ability to view or edit them from inside your project.
 If you don't need this functionality,
-you may specify `create_in_project_link: false`.
+just specify `create_in_project_link: false`.
 `link_name` specifies the name of the symlink to be created.
 The `_external` directory is added to `.gitignore` by default.
 
@@ -224,13 +237,24 @@ The VSCode intellisense is managed automatically by `ergomcutool`.
 This is done by analyzing the Makefile in addition to `ergomcu_project.yaml`
 and adding necessary entries to `.vscode/settings.json` and `.vscode/c_cpp_properties.json`.
 All include directories specified in your project are always added to the intellisense.
-All source file directories within your project are also added to the intellisense.
-By default, all external source file directories from the Makefile
-are added to the intellisense. This allows you to easily browse those files
-using `Go to definition` VSCode context help.
-If this behaviour is not required or slows down the computer,
-you can disable it by setting `intellisense.ignore_external_makefile_sources` to `true`
-in `ergomcu_project.yaml`.
+All source file directories within your project (including ones taken from the Makefile)
+are added to the intellisense as well.
+This allows you to browse the files using `Go to definition` VSCode context help.
+If adding source directories to the intellisense is not desired,
+you can disable it by setting `intellisense.skip_adding_source_directories` to `true`
+in `ergomcutool_config.yaml`.
+
+
+#### Known intellisense issues
+`C/C++` extension by `frannek94` uses `realpath` to obtain paths to 
+the include and source directories. This behaviour leads to a possibility that
+the same file can be opened in VSCode multiple times under different names, e.g.
+`_external/my-lib/file1.c` and `/actual/path/to/my-lib/file1.c`.
+The intellisense will still work, but one of the files will be ignored by it and a warning will be issued:
+`Unable to process IntelliSense for file with same canonicalized path as existing file.`
+To avoid this warning and avoid opening same file under different names,
+a VSCode extension `Open file realpath` is currently being tested and will soon be published.
+
 
 
 ### Programming the MCU

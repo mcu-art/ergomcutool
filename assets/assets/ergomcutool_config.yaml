@@ -27,8 +27,8 @@ openocd:
   svd_file_path:
 
 
-# External dependencies are libraries
-# or directories with source files that you may use in your projects.
+# External project dependencies are external libraries
+# or directories that you use in your project.
 # Relative paths are calculated from the project root.
 # This setting is the same as in the 'ergomcu_project.yaml' file,
 # but these values have precedence in case of a conflict.
@@ -52,4 +52,6 @@ build_options:
 
 
 intellisense:
-#  ignore_external_makefile_sources: false
+  # Skip automatic adding of source directories to VSCode intellisense
+  # ("C_Cpp_Runner.includePaths" in .vscode/settings.json)
+#  skip_adding_source_directories: false
