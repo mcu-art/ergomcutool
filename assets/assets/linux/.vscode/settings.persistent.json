@@ -12,7 +12,10 @@
     "-Wcast-align",
     "-Wconversion",
     "-Wsign-conversion",
-    "-Wnull-dereference"
+    "-Wnull-dereference",
+    "-Wmissing-declarations",
+    "-Wstrict-prototypes",
+    "-Wold-style-definition"
   ],
   "C_Cpp_Runner.msvcWarnings": [
     "/W4",
